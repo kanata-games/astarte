@@ -5,7 +5,7 @@ class Foe {
     if (a.dash) return { x: this.x - 2, y: this.y - 2, w: this.w + 4, h: this.h + 4 };
     const bot = this.y + this.h + (a.by ? a.by + a.bh / 2 : 0); return { x: this.face > 0 ? cx : cx - a.bw, y: bot - a.bh, w: a.bw, h: a.bh }; }
   damage(n, poise, dir, crit) {
-    if (this.hp <= 0) return; this.hp -= n; this.flash = .1; SFX.hit(); fx(crit ? 'crit' : 'hit', this.x + this.w / 2, this.y + this.h / 2);
+    if (this.hp <= 0) return; this.hp -= n; this.flash = .1; SFX.hit(); G.hitstop = Math.max(G.hitstop, poise >= 40 ? .09 : .05); if (poise >= 40) G.shake = Math.max(G.shake, .15); fx(crit ? 'crit' : 'hit', this.x + this.w / 2, this.y + this.h / 2);
     if (this.hp <= 0) { this.die(); return; }
     if (!this.stagger && (poise >= this.d.poise || this.state !== 'active')) { if (this.state === 'windup' && poise < this.d.poise) return; this.state = 'idle'; this.stagger = .35; this.parried = false; this.vx = dir * 60; }
   }

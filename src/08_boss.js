@@ -2,7 +2,7 @@
 class Boss {
   constructor(x, y) { Object.assign(this, { kind: 'boss', x, y, w: BOSS.w, h: BOSS.h, vx: 0, vy: 0, face: -1, hp: BOSS.hp, state: 'intro', st: 0, t: 0, atk: null, atkId: null, stagger: 0, parried: false, cd: 1.2, phase2: false, n: 0, flash: 0 }); }
   sc() { return this.phase2 ? .82 : 1; }
-  damage(n, poise, dir, crit) { if (this.hp <= 0 || this.state === 'intro') return; this.hp -= n * (crit ? 1 : 1); this.flash = .1; SFX.hit(); fx(crit ? 'crit' : 'hit', this.x + this.w / 2, this.y + 30);
+  damage(n, poise, dir, crit) { if (this.hp <= 0 || this.state === 'intro') return; this.hp -= n * (crit ? 1 : 1); this.flash = .1; SFX.hit(); G.hitstop = Math.max(G.hitstop, poise >= 40 ? .09 : .05); if (poise >= 40) G.shake = Math.max(G.shake, .15); fx(crit ? 'crit' : 'hit', this.x + this.w / 2, this.y + 30);
     if (!this.phase2 && this.hp < BOSS.hp / 2) { this.phase2 = true; G.toast('ノクターンの鐘が狂い鳴る…'); SFX.bell(); }
     if (this.hp <= 0) { this.hp = 0; STATS.kills++; G.bossDefeated(this); } }
   onParried() { this.state = 'idle'; this.stagger = 1.6; this.parried = true; this.vx = 0; this.cd = .8; }

@@ -8,7 +8,9 @@ function fx(kind, x, y) {
   const n = kind === 'crit' || kind === 'death' ? 22 : kind === 'parry' ? 16 : 8;
   for (let i = 0; i < n; i++) { const a = rnd() * 6.28, s = 30 + rnd() * (kind === 'parry' ? 160 : 100); G.fx.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30, life: .3 + rnd() * .4, col, sz: kind === 'crit' ? 3 : 2 }); }
   if (kind === 'parry') G.fx.push({ ring: 1, x, y, life: .3, col });
+  if (kind === 'crit' || kind === 'hit') for (let i = 0; i < (kind === 'crit' ? 8 : 3); i++) G.fx.push({ star: 1, x, y, vx: (rnd() - .5) * 180, vy: -60 - rnd() * 120, life: .5 + rnd() * .3, col: kind === 'crit' ? '#ffe08a' : '#c8d8ff', sz: 2 });
 }
+function dust(x, y, n) { for (let i = 0; i < n; i++) G.fx.push({ x: x + (rnd() - .5) * 10, y: y - 2, vx: (rnd() - .5) * 70, vy: -rnd() * 30, life: .35 + rnd() * .3, col: i % 2 ? '#6a6480' : '#4a4660', sz: 2, drag: 1, grav: -40 }); }
 G.gainSouls = (n, x, y) => { P.souls += n; SFX.souls(); for (let i = 0; i < 10; i++) G.fx.push({ x, y, vx: (rnd() - .5) * 60, vy: -40 - rnd() * 60, life: .8, col: '#a8f0ff', sz: 2, home: 1 }); };
 function enterRoom(ri, side) {
   G.ri = ri; G.room = buildRoom(ri); G.shots = []; const d = G.room.def;
@@ -65,7 +67,7 @@ function update(dt) {
   // room transitions
   if (P.state !== 'dead') { if (P.x + P.w / 2 < 0 && d.exits.left !== undefined) enterRoom(d.exits.left, 'right'); else if (P.x + P.w / 2 > G.room.w && d.exits.right !== undefined) enterRoom(d.exits.right, 'left'); }
   if (G.bossDown && G.boss && G.boss.hp <= 0) { G.endT += dt; if (G.endT > 4.5) { G.mode = 'ending'; G.endT = 0; } }
-  for (const f of G.fx) { f.life -= dt; if (!f.ring) { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 200 * dt; if (f.home) { f.x = lerp(f.x, P.x + P.w / 2, .06); f.y = lerp(f.y, P.y + 20, .06); } } }
+  for (const f of G.fx) { f.life -= dt; if (!f.ring) { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += (f.grav !== undefined ? f.grav : 200) * dt; if (f.drag) f.vx *= .9; if (f.home) { f.x = lerp(f.x, P.x + P.w / 2, .06); f.y = lerp(f.y, P.y + 20, .06); } } }
   G.fx = G.fx.filter(f => f.life > 0);
   G.shake = Math.max(0, G.shake - dt); G.flash = Math.max(0, G.flash - dt); G.areaT -= dt;
   G.cam = lerp(G.cam, clamp(P.x + P.w / 2 - VW / 2 + P.face * 30, 0, G.room.w - VW), .12);
@@ -112,10 +114,10 @@ function render() {
     if (e.hp < e.d.hp) { R(g, e.x, e.y - 14, e.w, 3, '#200'); R(g, e.x, e.y - 14, e.w * e.hp / e.d.hp, 3, '#c03050'); } }
   if (G.boss && (G.boss.hp > 0 || G.endT < 1.5)) { const b = G.boss; if (b.flash > 0) g.filter = 'brightness(2.5)'; if (b.hp <= 0) g.globalAlpha = Math.max(0, 1 - G.endT); drawBoss(g, b); g.filter = 'none'; g.globalAlpha = 1;
     if (b.stagger > 0 && b.parried) txt(g, '致命', b.x + b.w / 2, b.y - 30, '#ffe08a', 11, 'center'); }
-  const pp = playerPose(); if (P.state === 'hurt' && P.st < .1) g.filter = 'brightness(2.5)'; if (P.iframe > 0 && P.state !== 'roll' && P.state !== 'riposte' && (G.t * 20 | 0) % 2) g.globalAlpha = .6;
-  drawAstarte(g, P.x + P.w / 2, P.y + P.h, P.face, pp, P.weapons[P.wi]); g.filter = 'none'; g.globalAlpha = 1;
-  if (P.state === 'attack' && P.st >= P.move.wu && P.st < P.move.wu + P.move.act + .05) drawTrail(g, P.x + P.w / 2, P.y + P.h - P.move.h / 2 - 4, P.face, -1.3, 1.1, P.move.range * .8, P.moveKind === 'heavy' ? '#8ab0ff' : '#c8d8ff');
-  for (const f of G.fx) { if (f.ring) { g.strokeStyle = f.col; g.lineWidth = 2; g.globalAlpha = f.life / .3; g.beginPath(); g.arc(f.x, f.y, (.3 - f.life) * 120, 0, 7); g.stroke(); g.globalAlpha = 1; } else R(g, f.x, f.y, f.sz, f.sz, f.col); }
+  if (P.ghosts) for (const gh of P.ghosts) ASTA.draw(g, gh.x, gh.y, gh.face, 'roll', gh.f, P.weapons[P.wi], gh.a * .5);
+  const pp = playerPose(); if (P.state === 'hurt' && P.st < .08) g.filter = 'brightness(2.2)'; if (P.iframe > 0 && P.state === 'free' && (G.t * 20 | 0) % 2) g.globalAlpha = .6;
+  ASTA.draw(g, P.x + P.w / 2, P.y + P.h, P.face, pp.anim, pp.f, P.weapons[P.wi]); g.filter = 'none'; g.globalAlpha = 1;
+  for (const f of G.fx) { if (f.ring) { g.strokeStyle = f.col; g.lineWidth = 2; g.globalAlpha = f.life / .3; g.beginPath(); g.arc(f.x, f.y, (.3 - f.life) * 120, 0, 7); g.stroke(); g.globalAlpha = 1; } else if (f.star) { R(g, f.x - 2, f.y, 5, 1, f.col); R(g, f.x, f.y - 2, 1, 5, f.col); } else { if (f.life < .2) g.globalAlpha = f.life / .2; R(g, f.x, f.y, f.sz, f.sz, f.col); g.globalAlpha = 1; } }
   g.restore();
   // vignette
   const vg = g.createRadialGradient(VW / 2, VH / 2, 120, VW / 2, VH / 2, 260); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,8,.55)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
@@ -142,7 +144,7 @@ function drawHUD(g) {
 }
 function drawTitle(g) {
   g.drawImage(BG, -(G.t * 6 % 768), 0); g.drawImage(BG, 768 - (G.t * 6 % 768), 0); R(g, 0, 0, VW, VH, 'rgba(5,4,14,.45)');
-  g.save(); g.translate(VW / 2 + 90, 236); g.scale(2, 2); drawAstarte(g, 0, 0, -1, { k: 'idle', t: G.t }, 'scythe'); g.restore();
+  g.save(); g.translate(VW / 2 + 90, 236); g.scale(2, 2); ASTA.draw(g, 0, 0, -1, 'idle', (G.t / .2) % 6, 'scythe'); g.restore();
   txt(g, 'ASTARTE', 30, 92, '#e8e4ff', 34); txt(g, 'アスターテ ―月鐘の廃墟―', 32, 116, '#d9b45a', 14); R(g, 32, 124, 180, 1, '#d9b45a');
   if ((G.t * 2 | 0) % 2) txt(g, 'PRESS START / タップで開始', 32, 170, '#ffffff', 11);
   txt(g, '試作版 prototype', 32, 188, '#8a84b0', 9);

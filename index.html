@@ -30,10 +30,14 @@ const VW = 384, VH = 288, T = 16, DT = 1 / 60, GRAV = 900;
 const WEAPONS = {
   scythe: { name: '星詠みの大鎌', draw: 'scythe', riposteMul: 3.0,
     light: { wu: .22, act: .12, rec: .30, dmg: 34, stam: 18, range: 70, h: 56, lunge: 60, arc: [-2.2, .9], poise: 20 },
+    light2: { wu: .16, act: .12, rec: .30, dmg: 34, stam: 18, range: 70, h: 64, lunge: 70, poise: 20 },
+    light3: { wu: .28, act: .16, rec: .42, dmg: 48, stam: 24, range: 84, h: 64, lunge: 110, poise: 40 },
     heavy: { wu: .55, act: .16, rec: .45, dmg: 80, stam: 36, range: 84, h: 78, lunge: 40, arc: [-2.8, 1.3], poise: 60 },
     parry: { window: .20, stam: 14, dur: .45 } },
   pan: { name: 'ミャオのフライパン', draw: 'pan', riposteMul: 4.0,
     light: { wu: .12, act: .08, rec: .18, dmg: 18, stam: 10, range: 36, h: 36, lunge: 50, arc: [-1.8, .6], poise: 10 },
+    light2: { wu: .10, act: .08, rec: .18, dmg: 18, stam: 10, range: 36, h: 36, lunge: 60, poise: 10 },
+    light3: { wu: .20, act: .10, rec: .30, dmg: 30, stam: 16, range: 40, h: 44, lunge: 120, poise: 50 },
     heavy: { wu: .40, act: .12, rec: .30, dmg: 48, stam: 26, range: 42, h: 48, lunge: 90, arc: [-2.6, 1.0], poise: 80 },
     parry: { window: .28, stam: 10, dur: .40 } },   // light weapon = generous parry, big riposte
 };
@@ -567,8 +571,10 @@ function weapon() { return WEAPONS[P.weapons[P.wi]]; }
 function useStam(n) { if (P.stam <= 0) return false; P.stam -= n; P.stamDelay = .6; return true; }
 function pBox() { return { x: P.x, y: P.y, w: P.w, h: P.h }; }
 function startAttack(kind) {
-  const W = weapon(), m = W[kind]; if (!useStam(m.stam)) return;
-  P.state = 'attack'; P.st = 0; P.move = m; P.moveKind = kind; P.hitSet = new Set(); SFX.swing();
+  const W = weapon();
+  if (kind === 'light') { P.combo = (P.t - (P.comboT || -9) < .3 && P.combo < 3) ? P.combo + 1 : 1; kind = P.combo === 1 ? 'light' : 'light' + P.combo; } else P.combo = 0;
+  const m = W[kind]; if (!useStam(m.stam)) return;
+  P.anim = kind === 'light' ? 'light1' : kind; P.state = 'attack'; P.st = 0; P.move = m; P.moveKind = kind; P.hitSet = new Set(); SFX.swing();
 }
 function tryRiposte() {
   const W = weapon(); const list = G.foes().filter(e => e.hp > 0 && e.stagger > 0 && e.parried);
@@ -583,7 +589,7 @@ function hurtPlayer(dmg, src, parryable, label) {
   const W = weapon();
   if (P.state === 'parry' && P.st < W.parry.window && parryable) {
     const sx = src ? src.x + src.w / 2 : P.x; if (Math.sign(sx - (P.x + P.w / 2)) === P.face || Math.abs(sx - P.x - P.w / 2) < 8) {
-      STATS.parried++; SFX.parry(); G.flash = .12; G.hitstop = .12; fx('parry', P.x + P.w / 2 + P.face * 14, P.y + 18); if (src && src.onParried) src.onParried(); P.state = 'free'; P.stam = Math.min(pMaxStam(), P.stam + 10); return 'parried'; } }
+      STATS.parried++; SFX.parry(); G.flash = .12; G.hitstop = .12; fx('parry', P.x + P.w / 2 + P.face * 14, P.y + 18); if (src && src.onParried) src.onParried(); P.state = 'free'; P.parryFlashT = .3; P.stam = Math.min(pMaxStam(), P.stam + 10); return 'parried'; } }
   let d = dmg; if (P.state === 'parry') d *= 1.0;
   P.hp -= d; STATS.taken++; STATS.takenBy[label || '?'] = (STATS.takenBy[label || '?'] || 0) + 1; SFX.hurt(); G.shake = .2; G.hitstop = .06;
   fx('blood', P.x + P.w / 2, P.y + 20);
@@ -592,7 +598,7 @@ function hurtPlayer(dmg, src, parryable, label) {
   return 'hit';
 }
 function updatePlayer(dt) {
-  P.t += dt; P.st += dt; P.iframe = Math.max(0, P.iframe - dt);
+  P.t += dt; P.st += dt; P.parryFlashT = Math.max(0, (P.parryFlashT || 0) - dt); P.iframe = Math.max(0, P.iframe - dt);
   const W = weapon(), room = G.room;
   P.stamDelay -= dt; if (P.stamDelay <= 0 && P.state !== 'attack' && P.state !== 'roll') P.stam = Math.min(pMaxStam(), P.stam + (P.state === 'parry' ? 20 : 55) * dt);
   const dir = (held.right ? 1 : 0) - (held.left ? 1 : 0);
@@ -617,8 +623,8 @@ function updatePlayer(dt) {
       const hb = { x: P.face > 0 ? P.x + P.w / 2 : P.x + P.w / 2 - m.range, y: P.y + P.h - m.h, w: m.range, h: m.h };
       for (const e of G.foes()) if (e.hp > 0 && !P.hitSet.has(e) && overlap(hb, e)) { P.hitSet.add(e); e.damage(m.dmg * pStr(), m.poise, P.face); }
     }
-    if (P.st > m.wu + m.act + m.rec * .55 && (peek('light') || peek('heavy') || peek('roll'))) { P.state = 'free'; }
-    else if (P.st > m.wu + m.act + m.rec) P.state = 'free';
+    if (P.st > m.wu + m.act + m.rec * .55 && (peek('light') || peek('heavy') || peek('roll'))) { P.state = 'free'; P.comboT = P.t; }
+    else if (P.st > m.wu + m.act + m.rec) { P.state = 'free'; P.comboT = P.t; }
   } else if (P.state === 'riposte') {
     P.vx = 0;
     if (P.st > .35 && P.riposteTarget) { const e = P.riposteTarget; P.riposteTarget = null; STATS.ripostes++; e.damage(W.light.dmg * W.riposteMul * pStr(), 999, P.face, true); G.hitstop = .15; G.shake = .25; fx('crit', e.x + e.w / 2, e.y + e.h / 2); }
@@ -630,27 +636,41 @@ function updatePlayer(dt) {
   else if (P.state === 'hurt') { P.vx *= .9; if (P.st > .32) P.state = 'free'; }
   else if (P.state === 'flask') { P.vx = dir * 30; if (!P.healed && P.st > .55) { P.healed = true; P.flasks--; P.hp = Math.min(pMaxHp(), P.hp + pMaxHp() * .55); SFX.heal(); fx('heal', P.x + P.w / 2, P.y + 20); } if (P.st > .95) P.state = 'free'; }
   else if (P.state === 'rest') { P.vx = 0; }
+  const wasAir = !P.onGround, vy0 = P.vy, f0 = P.face;
   moveBody(P, room, dt);
+  if (wasAir && P.onGround && vy0 > 200) { P.landT = .16; dust(P.x + P.w / 2, P.y + P.h, 8); }
+  P.landT = Math.max(0, (P.landT || 0) - dt); P.turnT = Math.max(0, (P.turnT || 0) - dt);
+  if (P.state === 'free' && P.onGround && P.face !== (P.lastFace || P.face)) P.turnT = .12; P.lastFace = P.face;
+  if (P.state === 'free' && P.onGround && Math.abs(P.vx) > 60) { P.stepT = (P.stepT || 0) - dt; if (P.stepT <= 0) { P.stepT = .25; dust(P.x + P.w / 2 - P.face * 6, P.y + P.h, 2); } }
+  if (P.state === 'roll' && P.st < dt * 1.5) dust(P.x + P.w / 2, P.y + P.h, 6);
+  if (P.state === 'roll') { (P.ghosts = P.ghosts || []).push({ x: P.x + P.w / 2, y: P.y + P.h, f: Math.min(5, P.st / .48 * 6 | 0), face: P.face, a: .45 }); }
+  if (P.ghosts) { for (const g of P.ghosts) g.a -= dt * 2.2; P.ghosts = P.ghosts.filter(g => g.a > 0).slice(-6); }
   if (P.y > VH + 40) { P.hp = 0; P.state = 'dead'; P.st = 2; }
 }
-function playerPose() {
-  const s = P.state; if (s === 'roll') return { k: 'roll', t: P.st };
-  if (s === 'attack') { const m = P.move, a0 = m.arc[0], a1 = m.arc[1];
-    const f = P.st < m.wu ? 0 : Math.min(1, (P.st - m.wu) / m.act); const wa = P.st < m.wu ? lerp(-1.75, a0, P.st / m.wu) : lerp(a0, a1, f);
-    return { k: 'atk', t: P.st, wa, glow: P.st < m.wu && P.moveKind === 'heavy' ? '#9ab8ff' : null }; }
-  if (s === 'riposte') return { k: 'atk', t: P.st, wa: P.st < .35 ? -2.6 : 1.2, glow: '#ffe08a' };
-  if (s === 'parry') return { k: 'parry', t: P.st, glow: P.st < weapon().parry.window ? '#ffffff' : null };
-  if (s === 'hurt') return { k: 'hurt', t: P.st }; if (s === 'flask') return { k: 'flask', t: P.st }; if (s === 'rest') return { k: 'rest', t: P.t }; if (s === 'dead') return { k: 'dead', t: P.st };
-  if (!P.onGround) return { k: 'air', t: P.t }; return { k: Math.abs(P.vx) > 1 ? 'run' : 'idle', t: P.t };
-}
-// ===== normal enemies (data-driven from ENEMIES) =====
+function playerPose() { // -> { anim, f } into the アスターテ sheets
+  const s = P.state, ph3 = (st, wu, act, rec) => st < wu ? st / wu * 2 : st < wu + act ? 2 + (st - wu) / act * 2 : 4 + Math.min(1.99, (st - wu - act) / rec * 2);
+  if (s === 'roll') return { anim: 'roll', f: P.st / .48 * 6 };
+  if (s === 'attack') { const m = P.move; return { anim: P.anim, f: ph3(P.st, m.wu, m.act, m.rec) }; }
+  if (s === 'riposte') return { anim: 'riposte', f: ph3(P.st, .35, .15, .3) };
+  if (s === 'parry') { if (P.parryFlashT > 0) return { anim: 'parryflash', f: (.3 - P.parryFlashT) / .1 }; const w = weapon().parry; return { anim: 'parry', f: P.st < w.window ? (P.st < .05 ? 0 : 1) : 2 + (P.st - w.window) / (w.dur - w.window) * 2 }; }
+  if (P.parryFlashT > 0) return { anim: 'parryflash', f: (.3 - P.parryFlashT) / .1 };
+  if (s === 'hurt') return { anim: 'hit', f: P.st / .32 * 3 };
+  if (s === 'flask') return { anim: 'flask', f: P.st / .95 * 6 };
+  if (s === 'rest') return { anim: 'rest', f: P.st < .5 ? P.st / .25 : 2 + ((P.st * 1.2) | 0) % 2 };
+  if (s === 'dead') return { anim: 'death', f: P.st / .14 };
+  if (!P.onGround) return P.vy < 0 ? { anim: 'jump', f: P.vy < -200 ? 0 : 1 } : { anim: 'fall', f: P.vy < 200 ? 0 : 1 };
+  if (P.landT > 0) return { anim: 'land', f: (.16 - P.landT) / .08 };
+  if (P.turnT > 0) return { anim: 'turn', f: (.12 - P.turnT) / .04 };
+  if (Math.abs(P.vx) > 1) return { anim: 'run', f: (P.t * 12.5) % 8 };
+  return { anim: 'idle', f: (P.t / .2) % 6 };
+}// ===== normal enemies (data-driven from ENEMIES) =====
 class Foe {
   constructor(kind, x, y) { const d = ENEMIES[kind]; Object.assign(this, { kind, d, x, y, w: d.w, h: d.h, vx: 0, vy: 0, face: -1, hp: d.hp, state: 'idle', st: 0, t: rnd() * 5, atk: null, stagger: 0, parried: false, cd: .5, fly: !!d.fly, hx: x, hy: y, hitP: false, flash: 0 }); }
   atkBox() { const a = this.atk, cx = this.x + this.w / 2;
     if (a.dash) return { x: this.x - 2, y: this.y - 2, w: this.w + 4, h: this.h + 4 };
     const bot = this.y + this.h + (a.by ? a.by + a.bh / 2 : 0); return { x: this.face > 0 ? cx : cx - a.bw, y: bot - a.bh, w: a.bw, h: a.bh }; }
   damage(n, poise, dir, crit) {
-    if (this.hp <= 0) return; this.hp -= n; this.flash = .1; SFX.hit(); fx(crit ? 'crit' : 'hit', this.x + this.w / 2, this.y + this.h / 2);
+    if (this.hp <= 0) return; this.hp -= n; this.flash = .1; SFX.hit(); G.hitstop = Math.max(G.hitstop, poise >= 40 ? .09 : .05); if (poise >= 40) G.shake = Math.max(G.shake, .15); fx(crit ? 'crit' : 'hit', this.x + this.w / 2, this.y + this.h / 2);
     if (this.hp <= 0) { this.die(); return; }
     if (!this.stagger && (poise >= this.d.poise || this.state !== 'active')) { if (this.state === 'windup' && poise < this.d.poise) return; this.state = 'idle'; this.stagger = .35; this.parried = false; this.vx = dir * 60; }
   }
@@ -707,7 +727,7 @@ function updateShots(dt) {
 class Boss {
   constructor(x, y) { Object.assign(this, { kind: 'boss', x, y, w: BOSS.w, h: BOSS.h, vx: 0, vy: 0, face: -1, hp: BOSS.hp, state: 'intro', st: 0, t: 0, atk: null, atkId: null, stagger: 0, parried: false, cd: 1.2, phase2: false, n: 0, flash: 0 }); }
   sc() { return this.phase2 ? .82 : 1; }
-  damage(n, poise, dir, crit) { if (this.hp <= 0 || this.state === 'intro') return; this.hp -= n * (crit ? 1 : 1); this.flash = .1; SFX.hit(); fx(crit ? 'crit' : 'hit', this.x + this.w / 2, this.y + 30);
+  damage(n, poise, dir, crit) { if (this.hp <= 0 || this.state === 'intro') return; this.hp -= n * (crit ? 1 : 1); this.flash = .1; SFX.hit(); G.hitstop = Math.max(G.hitstop, poise >= 40 ? .09 : .05); if (poise >= 40) G.shake = Math.max(G.shake, .15); fx(crit ? 'crit' : 'hit', this.x + this.w / 2, this.y + 30);
     if (!this.phase2 && this.hp < BOSS.hp / 2) { this.phase2 = true; G.toast('ノクターンの鐘が狂い鳴る…'); SFX.bell(); }
     if (this.hp <= 0) { this.hp = 0; STATS.kills++; G.bossDefeated(this); } }
   onParried() { this.state = 'idle'; this.stagger = 1.6; this.parried = true; this.vx = 0; this.cd = .8; }
@@ -763,7 +783,9 @@ function fx(kind, x, y) {
   const n = kind === 'crit' || kind === 'death' ? 22 : kind === 'parry' ? 16 : 8;
   for (let i = 0; i < n; i++) { const a = rnd() * 6.28, s = 30 + rnd() * (kind === 'parry' ? 160 : 100); G.fx.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30, life: .3 + rnd() * .4, col, sz: kind === 'crit' ? 3 : 2 }); }
   if (kind === 'parry') G.fx.push({ ring: 1, x, y, life: .3, col });
+  if (kind === 'crit' || kind === 'hit') for (let i = 0; i < (kind === 'crit' ? 8 : 3); i++) G.fx.push({ star: 1, x, y, vx: (rnd() - .5) * 180, vy: -60 - rnd() * 120, life: .5 + rnd() * .3, col: kind === 'crit' ? '#ffe08a' : '#c8d8ff', sz: 2 });
 }
+function dust(x, y, n) { for (let i = 0; i < n; i++) G.fx.push({ x: x + (rnd() - .5) * 10, y: y - 2, vx: (rnd() - .5) * 70, vy: -rnd() * 30, life: .35 + rnd() * .3, col: i % 2 ? '#6a6480' : '#4a4660', sz: 2, drag: 1, grav: -40 }); }
 G.gainSouls = (n, x, y) => { P.souls += n; SFX.souls(); for (let i = 0; i < 10; i++) G.fx.push({ x, y, vx: (rnd() - .5) * 60, vy: -40 - rnd() * 60, life: .8, col: '#a8f0ff', sz: 2, home: 1 }); };
 function enterRoom(ri, side) {
   G.ri = ri; G.room = buildRoom(ri); G.shots = []; const d = G.room.def;
@@ -820,7 +842,7 @@ function update(dt) {
   // room transitions
   if (P.state !== 'dead') { if (P.x + P.w / 2 < 0 && d.exits.left !== undefined) enterRoom(d.exits.left, 'right'); else if (P.x + P.w / 2 > G.room.w && d.exits.right !== undefined) enterRoom(d.exits.right, 'left'); }
   if (G.bossDown && G.boss && G.boss.hp <= 0) { G.endT += dt; if (G.endT > 4.5) { G.mode = 'ending'; G.endT = 0; } }
-  for (const f of G.fx) { f.life -= dt; if (!f.ring) { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 200 * dt; if (f.home) { f.x = lerp(f.x, P.x + P.w / 2, .06); f.y = lerp(f.y, P.y + 20, .06); } } }
+  for (const f of G.fx) { f.life -= dt; if (!f.ring) { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += (f.grav !== undefined ? f.grav : 200) * dt; if (f.drag) f.vx *= .9; if (f.home) { f.x = lerp(f.x, P.x + P.w / 2, .06); f.y = lerp(f.y, P.y + 20, .06); } } }
   G.fx = G.fx.filter(f => f.life > 0);
   G.shake = Math.max(0, G.shake - dt); G.flash = Math.max(0, G.flash - dt); G.areaT -= dt;
   G.cam = lerp(G.cam, clamp(P.x + P.w / 2 - VW / 2 + P.face * 30, 0, G.room.w - VW), .12);
@@ -867,10 +889,10 @@ function render() {
     if (e.hp < e.d.hp) { R(g, e.x, e.y - 14, e.w, 3, '#200'); R(g, e.x, e.y - 14, e.w * e.hp / e.d.hp, 3, '#c03050'); } }
   if (G.boss && (G.boss.hp > 0 || G.endT < 1.5)) { const b = G.boss; if (b.flash > 0) g.filter = 'brightness(2.5)'; if (b.hp <= 0) g.globalAlpha = Math.max(0, 1 - G.endT); drawBoss(g, b); g.filter = 'none'; g.globalAlpha = 1;
     if (b.stagger > 0 && b.parried) txt(g, '致命', b.x + b.w / 2, b.y - 30, '#ffe08a', 11, 'center'); }
-  const pp = playerPose(); if (P.state === 'hurt' && P.st < .1) g.filter = 'brightness(2.5)'; if (P.iframe > 0 && P.state !== 'roll' && P.state !== 'riposte' && (G.t * 20 | 0) % 2) g.globalAlpha = .6;
-  drawAstarte(g, P.x + P.w / 2, P.y + P.h, P.face, pp, P.weapons[P.wi]); g.filter = 'none'; g.globalAlpha = 1;
-  if (P.state === 'attack' && P.st >= P.move.wu && P.st < P.move.wu + P.move.act + .05) drawTrail(g, P.x + P.w / 2, P.y + P.h - P.move.h / 2 - 4, P.face, -1.3, 1.1, P.move.range * .8, P.moveKind === 'heavy' ? '#8ab0ff' : '#c8d8ff');
-  for (const f of G.fx) { if (f.ring) { g.strokeStyle = f.col; g.lineWidth = 2; g.globalAlpha = f.life / .3; g.beginPath(); g.arc(f.x, f.y, (.3 - f.life) * 120, 0, 7); g.stroke(); g.globalAlpha = 1; } else R(g, f.x, f.y, f.sz, f.sz, f.col); }
+  if (P.ghosts) for (const gh of P.ghosts) ASTA.draw(g, gh.x, gh.y, gh.face, 'roll', gh.f, P.weapons[P.wi], gh.a * .5);
+  const pp = playerPose(); if (P.state === 'hurt' && P.st < .08) g.filter = 'brightness(2.2)'; if (P.iframe > 0 && P.state === 'free' && (G.t * 20 | 0) % 2) g.globalAlpha = .6;
+  ASTA.draw(g, P.x + P.w / 2, P.y + P.h, P.face, pp.anim, pp.f, P.weapons[P.wi]); g.filter = 'none'; g.globalAlpha = 1;
+  for (const f of G.fx) { if (f.ring) { g.strokeStyle = f.col; g.lineWidth = 2; g.globalAlpha = f.life / .3; g.beginPath(); g.arc(f.x, f.y, (.3 - f.life) * 120, 0, 7); g.stroke(); g.globalAlpha = 1; } else if (f.star) { R(g, f.x - 2, f.y, 5, 1, f.col); R(g, f.x, f.y - 2, 1, 5, f.col); } else { if (f.life < .2) g.globalAlpha = f.life / .2; R(g, f.x, f.y, f.sz, f.sz, f.col); g.globalAlpha = 1; } }
   g.restore();
   // vignette
   const vg = g.createRadialGradient(VW / 2, VH / 2, 120, VW / 2, VH / 2, 260); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,8,.55)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
@@ -897,7 +919,7 @@ function drawHUD(g) {
 }
 function drawTitle(g) {
   g.drawImage(BG, -(G.t * 6 % 768), 0); g.drawImage(BG, 768 - (G.t * 6 % 768), 0); R(g, 0, 0, VW, VH, 'rgba(5,4,14,.45)');
-  g.save(); g.translate(VW / 2 + 90, 236); g.scale(2, 2); drawAstarte(g, 0, 0, -1, { k: 'idle', t: G.t }, 'scythe'); g.restore();
+  g.save(); g.translate(VW / 2 + 90, 236); g.scale(2, 2); ASTA.draw(g, 0, 0, -1, 'idle', (G.t / .2) % 6, 'scythe'); g.restore();
   txt(g, 'ASTARTE', 30, 92, '#e8e4ff', 34); txt(g, 'アスターテ ―月鐘の廃墟―', 32, 116, '#d9b45a', 14); R(g, 32, 124, 180, 1, '#d9b45a');
   if ((G.t * 2 | 0) % 2) txt(g, 'PRESS START / タップで開始', 32, 170, '#ffffff', 11);
   txt(g, '試作版 prototype', 32, 188, '#8a84b0', 9);

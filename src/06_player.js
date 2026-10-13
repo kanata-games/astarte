@@ -7,8 +7,10 @@ function weapon() { return WEAPONS[P.weapons[P.wi]]; }
 function useStam(n) { if (P.stam <= 0) return false; P.stam -= n; P.stamDelay = .6; return true; }
 function pBox() { return { x: P.x, y: P.y, w: P.w, h: P.h }; }
 function startAttack(kind) {
-  const W = weapon(), m = W[kind]; if (!useStam(m.stam)) return;
-  P.state = 'attack'; P.st = 0; P.move = m; P.moveKind = kind; P.hitSet = new Set(); SFX.swing();
+  const W = weapon();
+  if (kind === 'light') { P.combo = (P.t - (P.comboT || -9) < .3 && P.combo < 3) ? P.combo + 1 : 1; kind = P.combo === 1 ? 'light' : 'light' + P.combo; } else P.combo = 0;
+  const m = W[kind]; if (!useStam(m.stam)) return;
+  P.anim = kind === 'light' ? 'light1' : kind; P.state = 'attack'; P.st = 0; P.move = m; P.moveKind = kind; P.hitSet = new Set(); SFX.swing();
 }
 function tryRiposte() {
   const W = weapon(); const list = G.foes().filter(e => e.hp > 0 && e.stagger > 0 && e.parried);
@@ -23,7 +25,7 @@ function hurtPlayer(dmg, src, parryable, label) {
   const W = weapon();
   if (P.state === 'parry' && P.st < W.parry.window && parryable) {
     const sx = src ? src.x + src.w / 2 : P.x; if (Math.sign(sx - (P.x + P.w / 2)) === P.face || Math.abs(sx - P.x - P.w / 2) < 8) {
-      STATS.parried++; SFX.parry(); G.flash = .12; G.hitstop = .12; fx('parry', P.x + P.w / 2 + P.face * 14, P.y + 18); if (src && src.onParried) src.onParried(); P.state = 'free'; P.stam = Math.min(pMaxStam(), P.stam + 10); return 'parried'; } }
+      STATS.parried++; SFX.parry(); G.flash = .12; G.hitstop = .12; fx('parry', P.x + P.w / 2 + P.face * 14, P.y + 18); if (src && src.onParried) src.onParried(); P.state = 'free'; P.parryFlashT = .3; P.stam = Math.min(pMaxStam(), P.stam + 10); return 'parried'; } }
   let d = dmg; if (P.state === 'parry') d *= 1.0;
   P.hp -= d; STATS.taken++; STATS.takenBy[label || '?'] = (STATS.takenBy[label || '?'] || 0) + 1; SFX.hurt(); G.shake = .2; G.hitstop = .06;
   fx('blood', P.x + P.w / 2, P.y + 20);
@@ -32,7 +34,7 @@ function hurtPlayer(dmg, src, parryable, label) {
   return 'hit';
 }
 function updatePlayer(dt) {
-  P.t += dt; P.st += dt; P.iframe = Math.max(0, P.iframe - dt);
+  P.t += dt; P.st += dt; P.parryFlashT = Math.max(0, (P.parryFlashT || 0) - dt); P.iframe = Math.max(0, P.iframe - dt);
   const W = weapon(), room = G.room;
   P.stamDelay -= dt; if (P.stamDelay <= 0 && P.state !== 'attack' && P.state !== 'roll') P.stam = Math.min(pMaxStam(), P.stam + (P.state === 'parry' ? 20 : 55) * dt);
   const dir = (held.right ? 1 : 0) - (held.left ? 1 : 0);
@@ -57,8 +59,8 @@ function updatePlayer(dt) {
       const hb = { x: P.face > 0 ? P.x + P.w / 2 : P.x + P.w / 2 - m.range, y: P.y + P.h - m.h, w: m.range, h: m.h };
       for (const e of G.foes()) if (e.hp > 0 && !P.hitSet.has(e) && overlap(hb, e)) { P.hitSet.add(e); e.damage(m.dmg * pStr(), m.poise, P.face); }
     }
-    if (P.st > m.wu + m.act + m.rec * .55 && (peek('light') || peek('heavy') || peek('roll'))) { P.state = 'free'; }
-    else if (P.st > m.wu + m.act + m.rec) P.state = 'free';
+    if (P.st > m.wu + m.act + m.rec * .55 && (peek('light') || peek('heavy') || peek('roll'))) { P.state = 'free'; P.comboT = P.t; }
+    else if (P.st > m.wu + m.act + m.rec) { P.state = 'free'; P.comboT = P.t; }
   } else if (P.state === 'riposte') {
     P.vx = 0;
     if (P.st > .35 && P.riposteTarget) { const e = P.riposteTarget; P.riposteTarget = null; STATS.ripostes++; e.damage(W.light.dmg * W.riposteMul * pStr(), 999, P.face, true); G.hitstop = .15; G.shake = .25; fx('crit', e.x + e.w / 2, e.y + e.h / 2); }
@@ -70,16 +72,31 @@ function updatePlayer(dt) {
   else if (P.state === 'hurt') { P.vx *= .9; if (P.st > .32) P.state = 'free'; }
   else if (P.state === 'flask') { P.vx = dir * 30; if (!P.healed && P.st > .55) { P.healed = true; P.flasks--; P.hp = Math.min(pMaxHp(), P.hp + pMaxHp() * .55); SFX.heal(); fx('heal', P.x + P.w / 2, P.y + 20); } if (P.st > .95) P.state = 'free'; }
   else if (P.state === 'rest') { P.vx = 0; }
+  const wasAir = !P.onGround, vy0 = P.vy, f0 = P.face;
   moveBody(P, room, dt);
+  if (wasAir && P.onGround && vy0 > 200) { P.landT = .16; dust(P.x + P.w / 2, P.y + P.h, 8); }
+  P.landT = Math.max(0, (P.landT || 0) - dt); P.turnT = Math.max(0, (P.turnT || 0) - dt);
+  if (P.state === 'free' && P.onGround && P.face !== (P.lastFace || P.face)) P.turnT = .12; P.lastFace = P.face;
+  if (P.state === 'free' && P.onGround && Math.abs(P.vx) > 60) { P.stepT = (P.stepT || 0) - dt; if (P.stepT <= 0) { P.stepT = .25; dust(P.x + P.w / 2 - P.face * 6, P.y + P.h, 2); } }
+  if (P.state === 'roll' && P.st < dt * 1.5) dust(P.x + P.w / 2, P.y + P.h, 6);
+  if (P.state === 'roll') { (P.ghosts = P.ghosts || []).push({ x: P.x + P.w / 2, y: P.y + P.h, f: Math.min(5, P.st / .48 * 6 | 0), face: P.face, a: .45 }); }
+  if (P.ghosts) { for (const g of P.ghosts) g.a -= dt * 2.2; P.ghosts = P.ghosts.filter(g => g.a > 0).slice(-6); }
   if (P.y > VH + 40) { P.hp = 0; P.state = 'dead'; P.st = 2; }
 }
-function playerPose() {
-  const s = P.state; if (s === 'roll') return { k: 'roll', t: P.st };
-  if (s === 'attack') { const m = P.move, a0 = m.arc[0], a1 = m.arc[1];
-    const f = P.st < m.wu ? 0 : Math.min(1, (P.st - m.wu) / m.act); const wa = P.st < m.wu ? lerp(-1.75, a0, P.st / m.wu) : lerp(a0, a1, f);
-    return { k: 'atk', t: P.st, wa, glow: P.st < m.wu && P.moveKind === 'heavy' ? '#9ab8ff' : null }; }
-  if (s === 'riposte') return { k: 'atk', t: P.st, wa: P.st < .35 ? -2.6 : 1.2, glow: '#ffe08a' };
-  if (s === 'parry') return { k: 'parry', t: P.st, glow: P.st < weapon().parry.window ? '#ffffff' : null };
-  if (s === 'hurt') return { k: 'hurt', t: P.st }; if (s === 'flask') return { k: 'flask', t: P.st }; if (s === 'rest') return { k: 'rest', t: P.t }; if (s === 'dead') return { k: 'dead', t: P.st };
-  if (!P.onGround) return { k: 'air', t: P.t }; return { k: Math.abs(P.vx) > 1 ? 'run' : 'idle', t: P.t };
+function playerPose() { // -> { anim, f } into the アスターテ sheets
+  const s = P.state, ph3 = (st, wu, act, rec) => st < wu ? st / wu * 2 : st < wu + act ? 2 + (st - wu) / act * 2 : 4 + Math.min(1.99, (st - wu - act) / rec * 2);
+  if (s === 'roll') return { anim: 'roll', f: P.st / .48 * 6 };
+  if (s === 'attack') { const m = P.move; return { anim: P.anim, f: ph3(P.st, m.wu, m.act, m.rec) }; }
+  if (s === 'riposte') return { anim: 'riposte', f: ph3(P.st, .35, .15, .3) };
+  if (s === 'parry') { if (P.parryFlashT > 0) return { anim: 'parryflash', f: (.3 - P.parryFlashT) / .1 }; const w = weapon().parry; return { anim: 'parry', f: P.st < w.window ? (P.st < .05 ? 0 : 1) : 2 + (P.st - w.window) / (w.dur - w.window) * 2 }; }
+  if (P.parryFlashT > 0) return { anim: 'parryflash', f: (.3 - P.parryFlashT) / .1 };
+  if (s === 'hurt') return { anim: 'hit', f: P.st / .32 * 3 };
+  if (s === 'flask') return { anim: 'flask', f: P.st / .95 * 6 };
+  if (s === 'rest') return { anim: 'rest', f: P.st < .5 ? P.st / .25 : 2 + ((P.st * 1.2) | 0) % 2 };
+  if (s === 'dead') return { anim: 'death', f: P.st / .14 };
+  if (!P.onGround) return P.vy < 0 ? { anim: 'jump', f: P.vy < -200 ? 0 : 1 } : { anim: 'fall', f: P.vy < 200 ? 0 : 1 };
+  if (P.landT > 0) return { anim: 'land', f: (.16 - P.landT) / .08 };
+  if (P.turnT > 0) return { anim: 'turn', f: (.12 - P.turnT) / .04 };
+  if (Math.abs(P.vx) > 1) return { anim: 'run', f: (P.t * 12.5) % 8 };
+  return { anim: 'idle', f: (P.t / .2) % 6 };
 }
