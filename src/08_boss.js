@@ -35,7 +35,7 @@ class Boss {
         if (this.atkId === 'leap') { this.state = 'air'; this.st = 0; const tx = clamp(px - this.w / 2, 20, room.w - this.w - 20); this.vy = -360; this.vx = (tx - this.x) / .8; this.face = dx > 0 ? 1 : -1; }
         else { this.state = 'active'; this.st = 0; } } }
     else if (this.state === 'air') { if (this.onGround && this.st > .1) { this.state = 'active'; this.st = 0; this.vx = 0; G.shake = .3;
-        for (const d of [-1, 1]) G.shots.push({ kind: 'wave', x: this.x + this.w / 2 - 8, y: this.y + this.h - 22, w: 16, h: 22, vx: d * a.wave, vy: 0, dmg: 18, life: 1.6, parry: false, label: 'boss:wave' }); } }
+        for (const d of [-1, 1]) G.shots.push({ kind: 'wave', x: this.x + this.w / 2 - 8, y: this.y + this.h - 22, w: 16, h: 22, vx: d * a.wave, vy: 0, dmg: 18, life: 1.9, delay: .3, parry: false, label: 'boss:wave' }); } }
     else if (this.state === 'active') {
       this.vx = a.lunge && this.st < a.act ? this.face * a.lunge : 0;
       if (this.atkId !== 'toll' && !this.hitP && overlap(this.box(), P)) { const r = hurtPlayer(a.dmg, this, a.parry, 'boss:' + this.atkId); if (r !== 'dodged') this.hitP = true; }

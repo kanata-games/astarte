@@ -103,7 +103,7 @@ function render() {
   g.save(); g.translate(-cam, 0);
   for (const s of G.shots) {
     if (s.kind === 'pillar') { if (s.t < s.warn) { g.globalAlpha = .25 + .25 * Math.sin(s.t * 20); R(g, s.x, 236, s.w, 4, '#ff5a3a'); R(g, s.x + s.w / 2 - 1, 40, 2, 196, '#ff5a3a'); g.globalAlpha = 1; } else { R(g, s.x, s.y, s.w, s.h, '#ffeec0'); R(g, s.x + 6, s.y, s.w - 12, s.h, '#fff'); } }
-    else if (s.kind === 'wave') { R(g, s.x, s.y + 6, s.w, s.h - 6, '#8a90b8'); R(g, s.x + 3, s.y, s.w - 6, 8, '#c8ccf0'); }
+    else if (s.kind === 'wave') { if (s.delay > 0) g.globalAlpha = .4; R(g, s.x, s.y + 6, s.w, s.h - 6, '#8a90b8'); R(g, s.x + 3, s.y, s.w - 6, 8, '#c8ccf0'); g.globalAlpha = 1; }
     else { g.fillStyle = '#d070ff'; g.beginPath(); g.arc(s.x + 5, s.y + 5, 6, 0, 7); g.fill(); R(g, s.x + 3, s.y + 3, 4, 4, '#fff0ff'); }
   }
   for (const e of G.enemies) if (e.hp > 0) { if (e.flash > 0) g.filter = 'brightness(3)'; drawEnemy(g, e); g.filter = 'none';
@@ -164,7 +164,7 @@ G.step = (n = 1) => { for (let i = 0; i < n; i++) update(DT); render(); };
 G.P = P; G.STATS = STATS; G.held = held; G.buf = buf; G.press = press; G.release = release; G.enterRoom = enterRoom; G.startGame = startGame;
 G.threats = () => { const out = []; for (const e of G.foes()) { const t = e.threat && e.threat(); if (t) out.push(t); }
   for (const s of G.shots) { if (s.kind === 'pillar') { if (!s.hitP && s.t < s.warn + s.act) out.push({ box: s, t: s.warn - s.t, dur: s.act, parry: false, label: 'boss:toll' }); }
-    else { const sp = Math.hypot(s.vx, s.vy) || 1, dx = (P.x + P.w / 2) - (s.x + s.w / 2), tt = Math.abs(dx) / Math.max(1, Math.abs(s.vx)); if (!s.hitP && Math.sign(dx) === Math.sign(s.vx)) out.push({ box: { x: s.x + s.vx * tt - 6, y: s.y + s.vy * tt - 6, w: s.w + 12, h: s.h + 12 }, t: tt - .05, dur: (s.w + P.w) / sp, parry: false, label: s.label }); } }
+    else { const sp = Math.hypot(s.vx, s.vy) || 1, dl = s.delay > 0 ? s.delay : 0, dx = (P.x + P.w / 2) - (s.x + s.w / 2), tt = Math.max(0, Math.abs(dx) - (P.w + s.w) / 2) / Math.max(1, Math.abs(s.vx)); if (!s.hitP && Math.sign(dx) === Math.sign(s.vx)) out.push({ box: { x: s.x + s.vx * tt - 6, y: s.y + s.vy * tt - 10, w: s.w + 12, h: s.h + 12 }, proj: true, t: tt + dl - .05, dur: (s.w + P.w) / sp, parry: false, label: s.label }); } }
   return out; };
 window.G = G;
 if (!TESTMODE) requestAnimationFrame(frame); else render();

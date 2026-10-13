@@ -30,7 +30,7 @@ const BOSS = { name: '弔鐘の騎士 ノクターン', hp: 950, souls: 2000, w:
   attacks: {
     cleave: { range: 98, wu: .85, act: .16, rec: .85, dmg: 32, bw: 90, bh: 84, lunge: 60, parry: true },
     sweep:  { range: 154, wu: .8, act: .18, rec: .9, dmg: 26, bw: 146, bh: 25, parry: false },
-    leap:   { range: 1399, wu: .6, act: .15, rec: 1.0, dmg: 30, bw: 84, bh: 42, parry: false, wave: 150 },
+    leap:   { range: 1399, wu: .6, act: .15, rec: 1.0, dmg: 30, bw: 84, bh: 42, parry: false, wave: 115 },
     toll:   { range: 1399, wu: 1.0, act: .25, rec: 1.0, dmg: 22, parry: false },
   } };
 const LEVEL_COST = lv => 120 + lv * 60;

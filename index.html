@@ -54,7 +54,7 @@ const BOSS = { name: '弔鐘の騎士 ノクターン', hp: 950, souls: 2000, w:
   attacks: {
     cleave: { range: 98, wu: .85, act: .16, rec: .85, dmg: 32, bw: 90, bh: 84, lunge: 60, parry: true },
     sweep:  { range: 154, wu: .8, act: .18, rec: .9, dmg: 26, bw: 146, bh: 25, parry: false },
-    leap:   { range: 1399, wu: .6, act: .15, rec: 1.0, dmg: 30, bw: 84, bh: 42, parry: false, wave: 150 },
+    leap:   { range: 1399, wu: .6, act: .15, rec: 1.0, dmg: 30, bw: 84, bh: 42, parry: false, wave: 115 },
     toll:   { range: 1399, wu: 1.0, act: .25, rec: 1.0, dmg: 22, parry: false },
   } };
 const LEVEL_COST = lv => 120 + lv * 60;
@@ -290,7 +290,7 @@ const ROOM_DEFS = [
     spawns: [{ k: 'wisp', x: 14, row: 8 }, { k: 'husk', x: 24 }, { k: 'wisp', x: 40, row: 7 }, { k: 'acolyte', x: 48 }], exits: { left: 1, right: 3 } },
   { name: '鐘楼の階段', w: 44, floor: [[0, 14, 15], [15, 19, 14], [20, 24, 13], [25, 43, 12]], plats: [], bonfire: 4,
     spawns: [{ k: 'guard', x: 31 }, { k: 'acolyte', x: 39 }, { k: 'wisp', x: 22, row: 6 }], exits: { left: 2, right: 4 }, fog: true },
-  { name: '弔鐘の間', w: 24, floor: [[0, 23, 15]], plats: [], boss: 16, exits: { left: 3 } },
+  { name: '弔鐘の間', w: 24, floor: [[0, 23, 15]], plats: [], boss: 16, spawns: [], exits: { left: 3 } },
 ];
 function buildRoom(i) {
   const d = ROOM_DEFS[i], g = [];
@@ -342,7 +342,7 @@ function hurtPlayer(dmg, src, parryable, label) {
   const W = weapon();
   if (P.state === 'parry' && P.st < W.parry.window && parryable) {
     const sx = src ? src.x + src.w / 2 : P.x; if (Math.sign(sx - (P.x + P.w / 2)) === P.face || Math.abs(sx - P.x - P.w / 2) < 8) {
-      STATS.parried++; SFX.parry(); G.flash = .12; G.hitstop = .12; fx('parry', P.x + P.w / 2 + P.face * 14, P.y + 18); if (src && src.onParried) src.onParried(); return 'parried'; } }
+      STATS.parried++; SFX.parry(); G.flash = .12; G.hitstop = .12; fx('parry', P.x + P.w / 2 + P.face * 14, P.y + 18); if (src && src.onParried) src.onParried(); P.state = 'free'; P.stam = Math.min(pMaxStam(), P.stam + 10); return 'parried'; } }
   let d = dmg; if (P.state === 'parry') d *= 1.0;
   P.hp -= d; STATS.taken++; STATS.takenBy[label || '?'] = (STATS.takenBy[label || '?'] || 0) + 1; SFX.hurt(); G.shake = .2; G.hitstop = .06;
   fx('blood', P.x + P.w / 2, P.y + 20);
@@ -384,7 +384,7 @@ function updatePlayer(dt) {
     if (P.st > .8) P.state = 'free';
   } else if (P.state === 'roll') {
     P.vx = P.face * (P.st < .38 ? 210 : 60); if (P.st >= .05 && P.st < .36) P.iframe = Math.max(P.iframe, .01);
-    if (P.st > .48) P.state = 'free';
+    if (P.st > .48 || (P.st > .36 && peek('jump'))) P.state = 'free';
   } else if (P.state === 'parry') { P.vx = 0; if (P.st > W.parry.dur) P.state = 'free'; }
   else if (P.state === 'hurt') { P.vx *= .9; if (P.st > .32) P.state = 'free'; }
   else if (P.state === 'flask') { P.vx = dir * 30; if (!P.healed && P.st > .55) { P.healed = true; P.flasks--; P.hp = Math.min(pMaxHp(), P.hp + pMaxHp() * .55); SFX.heal(); fx('heal', P.x + P.w / 2, P.y + 20); } if (P.st > .95) P.state = 'free'; }
@@ -413,7 +413,7 @@ class Foe {
     if (this.hp <= 0) { this.die(); return; }
     if (!this.stagger && (poise >= this.d.poise || this.state !== 'active')) { if (this.state === 'windup' && poise < this.d.poise) return; this.state = 'idle'; this.stagger = .35; this.parried = false; this.vx = dir * 60; }
   }
-  die() { this.hp = 0; STATS.kills++; G.gainSouls(this.d.souls, this.x + this.w / 2, this.y + this.h / 2); fx('death', this.x + this.w / 2, this.y + this.h / 2); }
+  die() { this.hp = 0; STATS.kills++; if (this.si !== undefined) (G.dead[G.ri] = G.dead[G.ri] || new Set()).add(this.si); G.gainSouls(this.d.souls, this.x + this.w / 2, this.y + this.h / 2); fx('death', this.x + this.w / 2, this.y + this.h / 2); }
   onParried() { this.state = 'idle'; this.stagger = 1.8; this.parried = true; this.vx = 0; }
   update(dt) {
     if (this.hp <= 0) return; this.t += dt; this.st += dt; this.flash -= dt;
@@ -455,6 +455,7 @@ function updateShots(dt) {
   for (const s of G.shots) {
     s.life -= dt; s.t = (s.t || 0) + dt;
     if (s.kind === 'pillar') { if (s.t >= s.warn && s.t < s.warn + s.act && !s.hitP && overlap(s, P)) { if (hurtPlayer(s.dmg, null, false, 'boss:toll') !== 'dodged') s.hitP = true; } continue; }
+    if (s.delay > 0) { s.delay -= dt; continue; }
     s.x += s.vx * dt; s.y += s.vy * dt;
     if (s.kind === 'orb' && tileAt(G.room, s.x + 5, s.y + 5) === 1) s.life = 0;
     if (!s.hitP && overlap(s, P)) { const r = hurtPlayer(s.dmg, s, s.parry, s.label); if (r !== 'dodged') { s.hitP = true; if (s.kind === 'orb') s.life = 0; } }
@@ -498,7 +499,7 @@ class Boss {
         if (this.atkId === 'leap') { this.state = 'air'; this.st = 0; const tx = clamp(px - this.w / 2, 20, room.w - this.w - 20); this.vy = -360; this.vx = (tx - this.x) / .8; this.face = dx > 0 ? 1 : -1; }
         else { this.state = 'active'; this.st = 0; } } }
     else if (this.state === 'air') { if (this.onGround && this.st > .1) { this.state = 'active'; this.st = 0; this.vx = 0; G.shake = .3;
-        for (const d of [-1, 1]) G.shots.push({ kind: 'wave', x: this.x + this.w / 2 - 8, y: this.y + this.h - 22, w: 16, h: 22, vx: d * a.wave, vy: 0, dmg: 18, life: 1.6, parry: false, label: 'boss:wave' }); } }
+        for (const d of [-1, 1]) G.shots.push({ kind: 'wave', x: this.x + this.w / 2 - 8, y: this.y + this.h - 22, w: 16, h: 22, vx: d * a.wave, vy: 0, dmg: 18, life: 1.9, delay: .3, parry: false, label: 'boss:wave' }); } }
     else if (this.state === 'active') {
       this.vx = a.lunge && this.st < a.act ? this.face * a.lunge : 0;
       if (this.atkId !== 'toll' && !this.hitP && overlap(this.box(), P)) { const r = hurtPlayer(a.dmg, this, a.parry, 'boss:' + this.atkId); if (r !== 'dodged') this.hitP = true; }
@@ -616,7 +617,7 @@ function render() {
   g.save(); g.translate(-cam, 0);
   for (const s of G.shots) {
     if (s.kind === 'pillar') { if (s.t < s.warn) { g.globalAlpha = .25 + .25 * Math.sin(s.t * 20); R(g, s.x, 236, s.w, 4, '#ff5a3a'); R(g, s.x + s.w / 2 - 1, 40, 2, 196, '#ff5a3a'); g.globalAlpha = 1; } else { R(g, s.x, s.y, s.w, s.h, '#ffeec0'); R(g, s.x + 6, s.y, s.w - 12, s.h, '#fff'); } }
-    else if (s.kind === 'wave') { R(g, s.x, s.y + 6, s.w, s.h - 6, '#8a90b8'); R(g, s.x + 3, s.y, s.w - 6, 8, '#c8ccf0'); }
+    else if (s.kind === 'wave') { if (s.delay > 0) g.globalAlpha = .4; R(g, s.x, s.y + 6, s.w, s.h - 6, '#8a90b8'); R(g, s.x + 3, s.y, s.w - 6, 8, '#c8ccf0'); g.globalAlpha = 1; }
     else { g.fillStyle = '#d070ff'; g.beginPath(); g.arc(s.x + 5, s.y + 5, 6, 0, 7); g.fill(); R(g, s.x + 3, s.y + 3, 4, 4, '#fff0ff'); }
   }
   for (const e of G.enemies) if (e.hp > 0) { if (e.flash > 0) g.filter = 'brightness(3)'; drawEnemy(g, e); g.filter = 'none';
@@ -677,7 +678,7 @@ G.step = (n = 1) => { for (let i = 0; i < n; i++) update(DT); render(); };
 G.P = P; G.STATS = STATS; G.held = held; G.buf = buf; G.press = press; G.release = release; G.enterRoom = enterRoom; G.startGame = startGame;
 G.threats = () => { const out = []; for (const e of G.foes()) { const t = e.threat && e.threat(); if (t) out.push(t); }
   for (const s of G.shots) { if (s.kind === 'pillar') { if (!s.hitP && s.t < s.warn + s.act) out.push({ box: s, t: s.warn - s.t, dur: s.act, parry: false, label: 'boss:toll' }); }
-    else { const sp = Math.hypot(s.vx, s.vy) || 1, dx = (P.x + P.w / 2) - (s.x + s.w / 2), tt = Math.abs(dx) / Math.max(1, Math.abs(s.vx)); if (!s.hitP && Math.sign(dx) === Math.sign(s.vx)) out.push({ box: { x: s.x + s.vx * tt - 6, y: s.y + s.vy * tt - 6, w: s.w + 12, h: s.h + 12 }, t: tt - .05, dur: (s.w + P.w) / sp, parry: false, label: s.label }); } }
+    else { const sp = Math.hypot(s.vx, s.vy) || 1, dl = s.delay > 0 ? s.delay : 0, dx = (P.x + P.w / 2) - (s.x + s.w / 2), tt = Math.max(0, Math.abs(dx) - (P.w + s.w) / 2) / Math.max(1, Math.abs(s.vx)); if (!s.hitP && Math.sign(dx) === Math.sign(s.vx)) out.push({ box: { x: s.x + s.vx * tt - 6, y: s.y + s.vy * tt - 10, w: s.w + 12, h: s.h + 12 }, proj: true, t: tt + dl - .05, dur: (s.w + P.w) / sp, parry: false, label: s.label }); } }
   return out; };
 window.G = G;
 if (!TESTMODE) requestAnimationFrame(frame); else render();

@@ -9,7 +9,7 @@ class Foe {
     if (this.hp <= 0) { this.die(); return; }
     if (!this.stagger && (poise >= this.d.poise || this.state !== 'active')) { if (this.state === 'windup' && poise < this.d.poise) return; this.state = 'idle'; this.stagger = .35; this.parried = false; this.vx = dir * 60; }
   }
-  die() { this.hp = 0; STATS.kills++; G.gainSouls(this.d.souls, this.x + this.w / 2, this.y + this.h / 2); fx('death', this.x + this.w / 2, this.y + this.h / 2); }
+  die() { this.hp = 0; STATS.kills++; if (this.si !== undefined) (G.dead[G.ri] = G.dead[G.ri] || new Set()).add(this.si); G.gainSouls(this.d.souls, this.x + this.w / 2, this.y + this.h / 2); fx('death', this.x + this.w / 2, this.y + this.h / 2); }
   onParried() { this.state = 'idle'; this.stagger = 1.8; this.parried = true; this.vx = 0; }
   update(dt) {
     if (this.hp <= 0) return; this.t += dt; this.st += dt; this.flash -= dt;
@@ -51,6 +51,7 @@ function updateShots(dt) {
   for (const s of G.shots) {
     s.life -= dt; s.t = (s.t || 0) + dt;
     if (s.kind === 'pillar') { if (s.t >= s.warn && s.t < s.warn + s.act && !s.hitP && overlap(s, P)) { if (hurtPlayer(s.dmg, null, false, 'boss:toll') !== 'dodged') s.hitP = true; } continue; }
+    if (s.delay > 0) { s.delay -= dt; continue; }
     s.x += s.vx * dt; s.y += s.vy * dt;
     if (s.kind === 'orb' && tileAt(G.room, s.x + 5, s.y + 5) === 1) s.life = 0;
     if (!s.hitP && overlap(s, P)) { const r = hurtPlayer(s.dmg, s, s.parry, s.label); if (r !== 'dodged') { s.hitP = true; if (s.kind === 'orb') s.life = 0; } }

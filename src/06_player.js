@@ -23,7 +23,7 @@ function hurtPlayer(dmg, src, parryable, label) {
   const W = weapon();
   if (P.state === 'parry' && P.st < W.parry.window && parryable) {
     const sx = src ? src.x + src.w / 2 : P.x; if (Math.sign(sx - (P.x + P.w / 2)) === P.face || Math.abs(sx - P.x - P.w / 2) < 8) {
-      STATS.parried++; SFX.parry(); G.flash = .12; G.hitstop = .12; fx('parry', P.x + P.w / 2 + P.face * 14, P.y + 18); if (src && src.onParried) src.onParried(); return 'parried'; } }
+      STATS.parried++; SFX.parry(); G.flash = .12; G.hitstop = .12; fx('parry', P.x + P.w / 2 + P.face * 14, P.y + 18); if (src && src.onParried) src.onParried(); P.state = 'free'; P.stam = Math.min(pMaxStam(), P.stam + 10); return 'parried'; } }
   let d = dmg; if (P.state === 'parry') d *= 1.0;
   P.hp -= d; STATS.taken++; STATS.takenBy[label || '?'] = (STATS.takenBy[label || '?'] || 0) + 1; SFX.hurt(); G.shake = .2; G.hitstop = .06;
   fx('blood', P.x + P.w / 2, P.y + 20);
@@ -65,7 +65,7 @@ function updatePlayer(dt) {
     if (P.st > .8) P.state = 'free';
   } else if (P.state === 'roll') {
     P.vx = P.face * (P.st < .38 ? 210 : 60); if (P.st >= .05 && P.st < .36) P.iframe = Math.max(P.iframe, .01);
-    if (P.st > .48) P.state = 'free';
+    if (P.st > .48 || (P.st > .36 && peek('jump'))) P.state = 'free';
   } else if (P.state === 'parry') { P.vx = 0; if (P.st > W.parry.dur) P.state = 'free'; }
   else if (P.state === 'hurt') { P.vx *= .9; if (P.st > .32) P.state = 'free'; }
   else if (P.state === 'flask') { P.vx = dir * 30; if (!P.healed && P.st > .55) { P.healed = true; P.flasks--; P.hp = Math.min(pMaxHp(), P.hp + pMaxHp() * .55); SFX.heal(); fx('heal', P.x + P.w / 2, P.y + 20); } if (P.st > .95) P.state = 'free'; }

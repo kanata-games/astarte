@@ -8,7 +8,7 @@ const ROOM_DEFS = [
     spawns: [{ k: 'wisp', x: 14, row: 8 }, { k: 'husk', x: 24 }, { k: 'wisp', x: 40, row: 7 }, { k: 'acolyte', x: 48 }], exits: { left: 1, right: 3 } },
   { name: '鐘楼の階段', w: 44, floor: [[0, 14, 15], [15, 19, 14], [20, 24, 13], [25, 43, 12]], plats: [], bonfire: 4,
     spawns: [{ k: 'guard', x: 31 }, { k: 'acolyte', x: 39 }, { k: 'wisp', x: 22, row: 6 }], exits: { left: 2, right: 4 }, fog: true },
-  { name: '弔鐘の間', w: 24, floor: [[0, 23, 15]], plats: [], boss: 16, exits: { left: 3 } },
+  { name: '弔鐘の間', w: 24, floor: [[0, 23, 15]], plats: [], boss: 16, spawns: [], exits: { left: 3 } },
 ];
 function buildRoom(i) {
   const d = ROOM_DEFS[i], g = [];
