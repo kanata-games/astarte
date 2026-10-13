@@ -90,12 +90,7 @@ function render() {
   if (G.mode === 'ending') return drawEnding(g);
   const sh = G.shake > 0 ? (rnd() - .5) * 6 * G.shake / .3 : 0; g.translate(Math.round(sh), 0);
   const cam = Math.round(G.cam);
-  g.drawImage(BG, -((cam * .25) % 768), 0); g.drawImage(BG, 768 - ((cam * .25) % 768), 0);
-  g.drawImage(BG2, -((cam * .55) % 512), 0); g.drawImage(BG2, 512 - ((cam * .55) % 512), 0);
-  // candles
-  for (let x = 96; x < G.room.w; x += 224) { const cx = x - cam; if (cx < -20 || cx > VW + 20) continue; const fy = floorY(G.room, Math.floor(x / T)); R(g, cx, fy - 22, 3, 22, '#4a3a30'); R(g, cx - 2, fy - 24, 7, 3, '#6a5030'); R(g, cx, fy - 30 + Math.round(Math.sin(G.t * 8 + x)), 3, 5, '#ffcf6a');
-    g.globalAlpha = .1; g.fillStyle = '#ffb040'; g.beginPath(); g.arc(cx + 1, fy - 28, 20, 0, 7); g.fill(); g.globalAlpha = 1; }
-  drawRoom(g);
+  drawLayers(g, G.room, cam); g.drawImage(G.room.canvas, -cam, 0); drawFlames(g, G.room, cam, G.t);
   const d = G.room.def;
   if (d.bonfire !== undefined) { drawBonfire(g, d.bonfire * T + 8 - cam, floorY(G.room, d.bonfire), G.t, !!G.lit[G.ri] || true);
     if (Math.abs(P.x + P.w / 2 - (d.bonfire * T + 8)) < 28 && !G.menu) txt(g, '▲ 休息する', d.bonfire * T + 8 - cam, floorY(G.room, d.bonfire) - 60, '#ffe8a8', 10, 'center'); }
@@ -119,6 +114,16 @@ function render() {
   ASTA.draw(g, P.x + P.w / 2, P.y + P.h, P.face, pp.anim, pp.f, P.weapons[P.wi]); g.filter = 'none'; g.globalAlpha = 1;
   for (const f of G.fx) { if (f.ring) { g.strokeStyle = f.col; g.lineWidth = 2; g.globalAlpha = f.life / .3; g.beginPath(); g.arc(f.x, f.y, (.3 - f.life) * 120, 0, 7); g.stroke(); g.globalAlpha = 1; } else if (f.star) { R(g, f.x - 2, f.y, 5, 1, f.col); R(g, f.x, f.y - 2, 1, 5, f.col); } else { if (f.life < .2) g.globalAlpha = f.life / .2; R(g, f.x, f.y, f.sz, f.sz, f.col); g.globalAlpha = 1; } }
   g.restore();
+  // lighting (darkness with light holes + warm/cool tints + moon shafts + motes), fog, foreground silhouettes
+  const LX = [{ x: P.x + P.w / 2, y: P.y + 24, r: 96, s: .6 }];
+  if (d.bonfire !== undefined) LX.push({ x: d.bonfire * T + 8, y: floorY(G.room, d.bonfire) - 40, r: 130, warm: 1 });
+  if (G.stain && G.stain.ri === G.ri) LX.push({ x: G.stain.x, y: G.stain.y - 10, r: 50, blue: 1 });
+  for (const e of G.enemies) if (e.hp > 0) { if (e.kind === 'wisp') LX.push({ x: e.x + e.w / 2, y: e.y + e.h / 2, r: 60, blue: 1 }); if (e.kind === 'acolyte' && e.state === 'windup') LX.push({ x: e.x + e.w / 2, y: e.y, r: 50, warm: 1 }); }
+  for (const s2 of G.shots) LX.push(s2.kind === 'pillar' ? { x: s2.x + 14, y: s2.t >= s2.warn ? 140 : 236, r: s2.t >= s2.warn ? 120 : 40, warm: s2.t >= s2.warn ? 1 : 0, red: s2.t < s2.warn ? 1 : 0 } : { x: s2.x + s2.w / 2, y: s2.y + s2.h / 2, r: 46, red: s2.kind === 'orb' ? 1 : 0, cool: 1 });
+  if (G.boss && G.boss.hp > 0) LX.push({ x: G.boss.x + G.boss.w / 2, y: G.boss.y + 10, r: 60, red: G.boss.phase2 ? 1 : 0, s: .5 });
+  if (P.parryFlashT > 0) LX.push({ x: P.x + P.w / 2 + P.face * 16, y: P.y + 10, r: 140, s: 1, cool: 1 });
+  if (d.pickup && !G.pickups[G.ri]) LX.push({ x: d.pickup.x * T + 8, y: d.pickup.row * T - 8, r: 40, warm: 1 });
+  drawLighting(g, G.room, cam, LX, G.t); drawFog(g, G.room, cam, G.t); drawForeground(g, G.room, cam);
   // vignette
   const vg = g.createRadialGradient(VW / 2, VH / 2, 120, VW / 2, VH / 2, 260); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,8,.55)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
   if (G.flash > 0) { g.globalAlpha = G.flash * 3; R(g, 0, 0, VW, VH, '#fff'); g.globalAlpha = 1; }
@@ -143,7 +148,7 @@ function drawHUD(g) {
     L.forEach((s, i) => txt(g, s, VW / 2, 50 + i * 20, i ? '#e0dcf0' : '#ffe08a', 11, 'center')); }
 }
 function drawTitle(g) {
-  g.drawImage(BG, -(G.t * 6 % 768), 0); g.drawImage(BG, 768 - (G.t * 6 % 768), 0); R(g, 0, 0, VW, VH, 'rgba(5,4,14,.45)');
+  { const tr = G.titleRoom || (G.titleRoom = buildRoom(1)); drawLayers(g, tr, G.t * 12); g.drawImage(tr.canvas, -((G.t * 12) % (tr.w - VW)), 0); drawLighting(g, tr, (G.t * 12) % (tr.w - VW), [{ x: VW * .7 + (G.t * 12) % (tr.w - VW), y: 180, r: 140, warm: 1 }], G.t); drawFog(g, tr, G.t * 12, G.t); } R(g, 0, 0, VW, VH, 'rgba(5,4,14,.45)');
   g.save(); g.translate(VW / 2 + 90, 236); g.scale(2, 2); ASTA.draw(g, 0, 0, -1, 'idle', (G.t / .2) % 6, 'scythe'); g.restore();
   txt(g, 'ASTARTE', 30, 92, '#e8e4ff', 34); txt(g, 'アスターテ ―月鐘の廃墟―', 32, 116, '#d9b45a', 14); R(g, 32, 124, 180, 1, '#d9b45a');
   if ((G.t * 2 | 0) % 2) txt(g, 'PRESS START / タップで開始', 32, 170, '#ffffff', 11);

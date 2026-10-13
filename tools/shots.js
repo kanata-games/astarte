@@ -17,4 +17,8 @@ const { chromium } = require('playwright'); const S = require('./serve.js'); con
   await shot('05_boss_toll');
   await p.evaluate(() => { for (let i = 0; i < 400; i++) { G.step(1); if (G.boss.state === 'windup' && G.boss.atkId === 'cleave' && G.boss.st > .5) break; } });
   await shot('06_boss_cleave');
+  await p.evaluate(() => { G.bot = null; G.boss = null; G.enterRoom(0); const P = G.P; P.x = 230; P.face = 1; G.areaT = 0; G.toasts = []; G.press('heavy'); G.step(1); G.release('heavy'); G.step(40); });
+  await shot('07_court_heavy');
+  await p.evaluate(() => { G.enterRoom(3, 'left'); G.enemies = []; const P = G.P; P.weapons = ['scythe', 'pan']; P.wi = 1; P.x = 300; P.y = 13 * 16 - 60; G.areaT = 0; G.toasts = []; G.step(30); G.press('heavy'); G.step(1); G.release('heavy'); G.step(34); });
+  await shot('08_tower_pan_smash');
   await b.close(); srv.close(); })();
