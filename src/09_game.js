@@ -162,7 +162,7 @@ function drawTitle(g) {
   g.save(); g.translate(VW / 2 + 90, 236); g.scale(2, 2); ASTA.draw(g, 0, 0, -1, 'idle', (G.t / .16) % ASTA.anim('scythe', 'idle').n, 'scythe'); g.restore();
   txt(g, 'ASTARTE', 30, 92, '#e8e4ff', 34); txt(g, 'アスターテ ―月鐘の廃墟―', 32, 116, '#d9b45a', 14); R(g, 32, 124, 180, 1, '#d9b45a');
   if ((G.t * 2 | 0) % 2) txt(g, 'PRESS START / タップで開始', 32, 170, '#ffffff', 11);
-  txt(g, '試作版 prototype', 32, 188, '#8a84b0', 9);
+  txt(g, 'v0.1.0-alpha', 32, 188, '#8a84b0', 9);
   txt(g, '清掃員工房 / カナタゲームズ', 32, VH - 18, '#a8a2d0', 10);
 }
 function drawEnding(g) {
