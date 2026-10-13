@@ -12,7 +12,7 @@ const WEAPONS = {
     heavy: { wu: .55, act: .16, rec: .45, dmg: 80, stam: 36, range: 84, h: 78, lunge: 40, arc: [-2.8, 1.3], poise: 60 },
     parry: { window: .20, stam: 14, dur: .45 }, sfx: { swing: 'whoosh', parry: 'parry' },
     // hand-made sheet by 素材づくり担当 (assets/art/astarte.png): timings/hitboxes come from astarte.json, tuned below for feel
-    art: { sheet: 'assets/art/astarte.png', meta: 'art_astarte', fix: { 41: [11, 0] },
+    art: { sheet: 'assets/art/astarte48.png', meta: 'art_astarte48', scale: ASTARTE_SCALE, body: { w: 14, h: 42 }, fix: {},
       map: { jump: 'jump_rise', apex: 'jump_apex', parryflash: 'parry', riposte: 'heavy', hit: 'hurt', flask: 'potion', turn: 'idle' } },
     tune: { light: { wu: .12, act: .09, rec: .28 }, light2: { wu: .10, act: .09, rec: .28 }, light3: { wu: .08, act: .18, rec: .34, lunge: 70 }, heavy: { rec: .40 },
             parry: { start: .04, window: .18, dur: .34 } } },
@@ -47,4 +47,6 @@ const BOSS = { name: '弔鐘の騎士 ノクターン', hp: 950, souls: 2000, w:
     leap:   { range: 1399, wu: .6, act: .15, rec: 1.0, dmg: 30, bw: 84, bh: 42, parry: false, wave: 115 },
     toll:   { range: 1399, wu: 1.0, act: .25, rec: 1.0, dmg: 22, parry: false },
   } };
+// 48px hooded Astarte (v0.1.1): drawn at native 1x (see README for the scale decision)
+var ASTARTE_SCALE = +(new URLSearchParams(location.search).get('ascale') || 1);
 const LEVEL_COST = lv => 120 + lv * 60;

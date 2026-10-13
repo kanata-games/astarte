@@ -4,6 +4,8 @@ const P = { x: 0, y: 0, w: 18, h: 56, vx: 0, vy: 0, face: 1, onGround: false, st
 const pMaxHp = () => 100 + P.lv.vit * 15, pMaxStam = () => 100 + P.lv.end * 12, pStr = () => 1 + P.lv.str * .1, MAXFLASK = 3;
 const STATS = { taken: 0, dodged: 0, parried: 0, ripostes: 0, deaths: 0, kills: 0, takenBy: {} };
 function weapon() { return WEAPONS[P.weapons[P.wi]]; }
+function fitBody() { // per-weapon body size (art sheets differ); keep the feet where they are
+  const W = weapon(), b = (W.art && W.art.body) || { w: 18, h: 56 }, feet = P.y + P.h, cx = P.x + P.w / 2; P.w = b.w; P.h = b.h; P.x = cx - b.w / 2; P.y = feet - b.h; }
 function useStam(n) { if (P.stam <= 0) return false; P.stam -= n; P.stamDelay = .6; return true; }
 function pBox() { return { x: P.x, y: P.y, w: P.w, h: P.h }; }
 function startAttack(kind) {
@@ -51,7 +53,7 @@ function updatePlayer(dt) {
     else if (pressed('roll') && P.onGround) { if (useStam(22)) { P.state = 'roll'; P.st = 0; if (dir) P.face = dir; SFX.roll(); } }
     else if (pressed('parry') && P.onGround) { if (useStam(W.parry.stam)) { P.state = 'parry'; P.st = 0; } }
     else if (pressed('flask') && P.onGround && P.flasks > 0) { P.state = 'flask'; P.st = 0; P.healed = false; }
-    else if (pressed('swap') && P.weapons.length > 1) { P.wi = (P.wi + 1) % P.weapons.length; G.toast(weapon().name + ' に持ち替えた'); }
+    else if (pressed('swap') && P.weapons.length > 1) { P.wi = (P.wi + 1) % P.weapons.length; fitBody(); G.toast(weapon().name + ' に持ち替えた'); }
   } else if (P.state === 'attack') {
     const m = P.move; const ph = P.st < m.wu ? 'wu' : P.st < m.wu + m.act ? 'act' : 'rec';
     P.vx = ph !== 'rec' ? P.face * m.lunge : P.vx * .8;

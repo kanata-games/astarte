@@ -19,7 +19,7 @@ function enterRoom(ri, side) {
   G.boss = null;
   if (d.boss !== undefined && !G.bossDown) { G.boss = new Boss(d.boss * T, floorY(G.room, d.boss) - BOSS.h); for (let y = 0; y < ROWS; y++) G.room.grid[y][0] = 1; G.toast(BOSS.name, 2.5); }
   if (side === 'left') { P.x = 20; } else if (side === 'right') { P.x = G.room.w - 40; }
-  const tx = clamp(Math.floor((P.x + P.w / 2) / T), 0, d.w - 1); P.y = floorY(G.room, tx) - P.h - 1; P.vy = 0;
+  fitBody(); const tx = clamp(Math.floor((P.x + P.w / 2) / T), 0, d.w - 1); P.y = floorY(G.room, tx) - P.h - 1; P.vy = 0;
   G.areaT = 2.4; G.cam = clamp(P.x - VW / 2, 0, G.room.w - VW);
 }
 function restAt() {
@@ -73,7 +73,7 @@ function update(dt) {
   G.cam = lerp(G.cam, clamp(P.x + P.w / 2 - VW / 2 + P.face * 30, 0, G.room.w - VW), .12);
 }
 function startGame() { G.mode = 'play'; G.menu = null; G.hitstop = 0; G.endT = 0; G.shots = []; for (const k in buf) buf[k] = 0; for (const k in held) held[k] = false; G.dead = {}; G.bossDown = false; G.stain = null; G.pickups = {}; G.lit = { 0: true }; G.check = { ri: 0, x: 6 };
-  Object.assign(P, { hp: 100, stam: 100, flasks: MAXFLASK, souls: 0, lv: { vit: 0, end: 0, str: 0 }, weapons: ['scythe'], wi: 0, state: 'free', face: 1, x: 3 * T, iframe: 0 });
+  Object.assign(P, { hp: 100, stam: 100, flasks: MAXFLASK, souls: 0, lv: { vit: 0, end: 0, str: 0 }, weapons: ['scythe'], wi: 0, state: 'free', face: 1, x: 3 * T, iframe: 0 }); fitBody();
   for (const k in STATS) STATS[k] = k === 'takenBy' ? {} : 0; enterRoom(0); G.toast('↑ で星の灯火に触れて休息', 3); }
 
 // ---------- render ----------
@@ -114,7 +114,7 @@ function render() {
   ASTA.draw(g, P.x + P.w / 2, P.y + P.h, P.face, pp.anim, pp.f, P.weapons[P.wi]); g.filter = 'none'; g.globalAlpha = 1;
   if (ASTA.get(P.weapons[P.wi]).meta.art) { // art sheets: runtime swing trail + parry clang flash on top of the hand-made frames
     if (P.state === 'attack' && P.st >= P.move.wu - .02 && P.st < P.move.wu + P.move.act + .06) { const hv = P.moveKind === 'heavy', k = (P.st - P.move.wu) / P.move.act;
-      drawTrail(g, P.x + P.w / 2 + P.face * 4, P.y + P.h - 34, P.face, hv ? -2.4 : -1.5, lerp(hv ? -2.4 : -1.5, hv ? 1.3 : 1.0, clamp(k + .3, .2, 1)), hv ? 44 : 34, hv ? '#8ab0ff' : '#c8d8ff'); }
+      drawTrail(g, P.x + P.w / 2 + P.face * 4, P.y + P.h * .4, P.face, hv ? -2.4 : -1.5, lerp(hv ? -2.4 : -1.5, hv ? 1.3 : 1.0, clamp(k + .3, .2, 1)), P.h * (hv ? .78 : .6), hv ? '#8ab0ff' : '#c8d8ff'); }
     if (P.state === 'riposte' && P.st > .3 && P.st < .5) drawTrail(g, P.x + P.w / 2, P.y + P.h - 34, P.face, -2.4, 1.2, 44, '#ffe08a');
     const Wd = weapon();
     if (Wd.dizzy && P.state === 'attack' && P.moveKind === 'heavy' && P.st > P.move.wu + P.move.act + .05) for (let i = 0; i < 3; i++) { const an = G.t * 6 + i * 2.1, sx = P.x + P.w / 2 + Math.cos(an) * 11, sy = P.y - 4 + Math.sin(an) * 3; R(g, sx - 2, sy, 5, 1, '#ffe08a'); R(g, sx, sy - 2, 1, 5, '#ffe08a'); }
@@ -162,7 +162,7 @@ function drawTitle(g) {
   g.save(); g.translate(VW / 2 + 90, 236); g.scale(2, 2); ASTA.draw(g, 0, 0, -1, 'idle', (G.t / .16) % ASTA.anim('scythe', 'idle').n, 'scythe'); g.restore();
   txt(g, 'ASTARTE', 30, 92, '#e8e4ff', 34); txt(g, 'アスターテ ―月鐘の廃墟―', 32, 116, '#d9b45a', 14); R(g, 32, 124, 180, 1, '#d9b45a');
   if ((G.t * 2 | 0) % 2) txt(g, 'PRESS START / タップで開始', 32, 170, '#ffffff', 11);
-  txt(g, 'v0.1.0-alpha', 32, 188, '#8a84b0', 9);
+  txt(g, 'v0.1.1-alpha', 32, 188, '#8a84b0', 9);
   txt(g, '清掃員工房 / カナタゲームズ', 32, VH - 18, '#a8a2d0', 10);
 }
 function drawEnding(g) {

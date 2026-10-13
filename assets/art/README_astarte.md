@@ -31,3 +31,12 @@
 - hurt 37-38 / death 39-42(フライパンが横に落ちている) / rest 43-44 / potion 45-48
 - 攻撃元絵は耳が紺・髪が灰色だったので、`pan_recolor.py` で白髪・白耳に塗り替え。
 - death 41-42 は左はみ出し防止で体を約6px右へずらしています。再生成: `work/build_pan.sh`
+
+## フード版 48×48 (`astarte48.png` / `astarte48.json`) — 推奨
+- 48×48 × 50フレーム、横1列、右向き。cx=24, feet_y=46(ブーツ最下段=45、その下が外枠)。耳先まで約44px(外枠込み約46)。
+- 固定23色パレット(Rockside の astarte 配色ベース)、1px 暗色外枠、alpha 0/255。ぼかし縮小ではなく「パレット分類→多数決」で、目・金・肌は重み付けで残しています。
+- 手修正(`work/h48_post.py`): 全フレームの目を2×2の青グリフに統一、1pxゴミ除去、口の赤以外の赤点除去、idle に Rockside 風の金の鎌を描き足し。
+- idle 0-3 / run 4-9 / jump_rise 10, jump_apex 11, fall 12, land 13 / roll 14-19(18-19 は立ち戻り)
+- light1 20-21 / light2 22-23 / light3 24-26 / heavy 27-32 / parry 33-36 / hurt 37-38 / death 39-43(5枚) / rest 44-45 / potion 46-49
+- はみ出し対策は 48×48 のまま、体から12〜14px以上離れた部分(マント・尻尾・鎌)だけ横に圧縮、頭上の鎌は縦に圧縮。対象フレームは JSON の `warped_frames`。
+- 再生成: `work/build48.sh`

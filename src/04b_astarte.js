@@ -282,7 +282,7 @@ const ASTA = {};
   function artSheet(wpn, A) {
     const J = (typeof EMBEDDED_META !== 'undefined' && EMBEDDED_META[A.meta]) || null; if (!J) return null;
     const byName = {}; for (const an of J.animations) byName[an.name] = an;
-    const meta = { cw: J.frame_w, ch: J.frame_h, ax: J.cx, ay: J.feet_y, anims: {}, art: true, fix: A.fix || {} };
+    const meta = { cw: J.frame_w, ch: J.frame_h, ax: J.cx, ay: J.feet_y, anims: {}, art: true, fix: A.fix || {}, scale: A.scale || 1 };
     for (const game of ASTA.ORDER.concat(['apex'])) { const an = byName[A.map[game] || game] || byName.idle, act = an.active || [];
       const first = act.length ? an.frames.indexOf(act[0]) : -1, last = act.length ? an.frames.indexOf(act[act.length - 1]) : -1;
       meta.anims[game] = { frames: an.frames.slice(), ms: an.ms.slice(), n: an.frames.length, ph: an.frames.map((f, i) => !act.length ? '' : i < first ? 'wu' : i <= last ? 'act' : 'rec'), active: act, hitbox: an.hitbox || {} }; }
@@ -300,7 +300,7 @@ const ASTA = {};
     let s = ASTA.get(wpn), m = s.meta;
     if (!s.ready) { s = s.fallback || (s.fallback = (() => { const b = ASTA.build('scythe'); return { img: b.canvas, meta: b.meta }; })()); m = s.meta; }   // art still loading
     const a = m.anims[anim] || m.anims.idle, fi = Math.max(0, Math.min(a.n - 1, f | 0));
-    g.save(); g.translate(Math.round(x), Math.round(y)); if (face < 0) g.scale(-1, 1); if (alpha !== undefined) g.globalAlpha = alpha;
+    g.save(); g.translate(Math.round(x), Math.round(y)); if (face < 0) g.scale(-1, 1); if (m.scale && m.scale !== 1) g.scale(m.scale, m.scale); if (alpha !== undefined) g.globalAlpha = alpha;
     if (m.art) { const id = a.frames[fi], fx = m.fix[id] || [0, 0]; g.drawImage(s.img, id * m.cw, 0, m.cw, m.ch, -m.ax + fx[0], -m.ay + fx[1], m.cw, m.ch); }
     else g.drawImage(s.img, fi * m.cw, a.row * m.ch, m.cw, m.ch, -m.ax, -m.ay, m.cw, m.ch);
     g.restore();
@@ -314,7 +314,7 @@ const ASTA = {};
       Object.assign(m, { wu, act, rec: Math.max(rec, m.rec || 0) });
       const boxes = a.active.map(f => a.hitbox[f]).filter(Boolean);
       if (boxes.length) { const x0 = Math.min(...boxes.map(b => b.x)), y0 = Math.min(...boxes.map(b => b.y)), x1 = Math.max(...boxes.map(b => b.x + b.w)), y1 = Math.max(...boxes.map(b => b.y + b.h));
-        m.hb = { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; m.range = x1; m.h = y1 - y0; }
+        const k = s.meta.scale || 1; m.hb = { x: x0 * k, y: y0 * k, w: (x1 - x0) * k, h: (y1 - y0) * k }; m.range = x1 * k; m.h = (y1 - y0) * k; }
       Object.assign(m, (W.tune || {})[k] || {}); }
     const pa = s.meta.anims.parry; if (pa && W.tune && W.tune.parry) Object.assign(W.parry, W.tune.parry);
   };

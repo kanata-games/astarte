@@ -40,9 +40,9 @@ let fails = 0; const ok = (n, c, i) => { if (!c) fails++; console.log((c ? 'PASS
   // 6b. combos + distinct per-weapon motion sets
   const combo = await p.evaluate(() => { const out = {}; for (const w of ['scythe', 'pan']) { G.startGame(); G.enemies = []; const P = G.P; P.weapons = [w]; P.wi = 0; P.x = 200; G.step(5); const seen = [];
       for (let k = 0; k < 3; k++) { G.press('light'); G.step(1); G.release('light'); G.step(2); seen.push(P.anim); while (P.state === 'attack' && P.st < P.move.wu + P.move.act + P.move.rec * .6) G.step(1); }
-      while (P.state !== 'free') G.step(1); G.step(30); G.press('heavy'); G.step(1); G.release('heavy'); seen.push(P.anim); out[w] = { seen, frames: ['light1', 'light2', 'light3', 'heavy', 'parryflash'].map(a => ASTA.get(w).meta.anims[a].n) }; }
+      while (P.state !== 'free') G.step(1); G.step(30); G.press('heavy'); G.step(1); G.release('heavy'); seen.push(P.anim); out[w] = { seen, sheet: (WEAPONS[w].art || {}).sheet, heavyRec: WEAPONS[w].heavy.rec, frames: ['light1', 'light2', 'light3', 'heavy', 'parryflash'].map(a => ASTA.get(w).meta.anims[a].n) }; }
     return out; });
-  ok('3-hit combos + heavy on both weapons, distinct frame counts', ['scythe', 'pan'].every(w => combo[w].seen.join() === 'light1,light2,light3,heavy') && combo.scythe.frames.join() !== combo.pan.frames.join(), combo);
+  ok('3-hit combos + heavy on both weapons, distinct frame counts', ['scythe', 'pan'].every(w => combo[w].seen.join() === 'light1,light2,light3,heavy') && combo.scythe.sheet !== combo.pan.sheet && combo.scythe.heavyRec !== combo.pan.heavyRec, combo);
   // 7. every normal enemy attack avoidable (dodge-only bot, 40 s each, no hits)
   for (const k of ['husk', 'guard', 'wisp', 'acolyte']) {
     const r = await p.evaluate(k => { G.startGame(); installBot({ fight: false }); const P = G.P; P.hp = 1e6; P.x = 150; G.step(2);
