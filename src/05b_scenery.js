@@ -111,16 +111,16 @@ function bakeRoom(room) {
   // back wall: large blocks, cut arches show the parallax behind
   const wc = mk(W, VH), w = wc.getContext('2d'); w.fillStyle = dk; w.fillRect(0, 0, W, VH);
   for (let y = 32; y < VH; y += 24) for (let x = ((y / 24) % 2) * 20 - 20; x < W; x += 40) { w.fillStyle = hsh(x, y) > .5 ? '#1e1b2c' : '#221f32'; if (th.name === 'crypt') w.fillStyle = hsh(x, y) > .5 ? '#1a1c20' : '#1e2024'; if (th.name === 'belfry') w.fillStyle = hsh(x, y) > .5 ? '#22161e' : '#281a22'; w.fillRect(x + 1, y + 1, 38, 22); w.fillStyle = 'rgba(255,255,255,.03)'; w.fillRect(x + 1, y + 1, 38, 1); }
-  w.globalCompositeOperation = 'destination-out';
+  w.globalCompositeOperation = 'destination-out'; w.fillStyle = '#000';
   const cut = th.wall === 'ruin' ? 'ruin' : th.wall === 'crypt' ? null : 'arch';
   if (cut === 'arch') for (let x = (d.archOff || 64); x < W - 40; x += (d.archGap || 176)) { w.beginPath(); w.moveTo(x, 236); w.lineTo(x, 110); w.arc(x + 36, 110, 36, Math.PI, 0); w.lineTo(x + 72, 236); w.fill(); }
-  if (cut === 'ruin') { w.beginPath(); w.moveTo(0, 0); for (let x = 0; x <= W; x += 16) w.lineTo(x, 60 + Math.round(hsh(x, 3) * 3) * 20 + (hsh(x, 9) > .8 ? 60 : 0)); w.lineTo(W, 0); w.fill(); }
+  if (cut === 'ruin') { w.beginPath(); w.moveTo(0, 0); for (let x = 0; x <= W; x += 16) w.lineTo(x, 110 + Math.round(hsh(x >> 5, 3) * 3) * 16 + (hsh(x >> 4, 9) > .75 ? 50 : 0)); w.lineTo(W, 0); w.fill(); }
   w.globalCompositeOperation = 'source-over';
   if (cut === 'arch') for (let x = (d.archOff || 64); x < W - 40; x += (d.archGap || 176)) { w.strokeStyle = l; w.lineWidth = 4; w.beginPath(); w.moveTo(x - 1, 236); w.lineTo(x - 1, 110); w.arc(x + 36, 110, 37, Math.PI, 0); w.lineTo(x + 73, 236); w.stroke(); R(w, x + 34, 70, 4, 6, hi); }
   g.drawImage(wc, 0, 0);
-  const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, 'rgba(5,3,12,.5)'); gr.addColorStop(.5, 'rgba(5,3,12,.05)'); gr.addColorStop(1, 'rgba(5,3,12,.35)'); g.fillStyle = gr; g.fillRect(0, 0, W, VH);
+  const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, 'rgba(5,3,12,.5)'); gr.addColorStop(.5, 'rgba(5,3,12,.05)'); gr.addColorStop(1, 'rgba(5,3,12,.35)'); g.fillStyle = gr; g.globalCompositeOperation = 'source-atop'; g.fillRect(0, 0, W, VH); g.globalCompositeOperation = 'source-over';
   // crown molding under the ceiling + wainscot above floors
-  for (let x = 0; x < W; x += 16) { R(g, x, 32, 16, 4, l); R(g, x, 32, 16, 1, hi); R(g, x + 2, 36, 12, 3, b); R(g, x + 7, 39, 2, 3, dk); }
+  if (cut !== 'ruin') for (let x = 0; x < W; x += 16) { R(g, x, 32, 16, 4, l); R(g, x, 32, 16, 1, hi); R(g, x + 2, 36, 12, 3, b); R(g, x + 7, 39, 2, 3, dk); }
   for (let col = 0; col < d.w; col++) for (let r = 3; r < ROWS; r++) if (room.grid[r][col] === 1 && room.grid[r - 1][col] !== 1) { const y = r * T; R(g, col * T, y - 14, T, 14, dk); R(g, col * T, y - 14, T, 2, l); R(g, col * T + (col % 2 ? 2 : 10), y - 11, 4, 9, b); }
   // decor (background props)
   room.lights = []; room.flames = []; room.shafts = []; room.fgDecor = [];

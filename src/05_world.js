@@ -13,7 +13,7 @@ const ROOM_DEFS = [
 function buildRoom(i) {
   const d = ROOM_DEFS[i], g = [];
   for (let y = 0; y < ROWS; y++) g.push(new Array(d.w).fill(0));
-  for (let x = 0; x < d.w; x++) { g[0][x] = 1; g[1][x] = 1; }
+  if (d.theme !== 'court') for (let x = 0; x < d.w; x++) { g[0][x] = 1; g[1][x] = 1; }
   for (const [a, b, row] of d.floor) for (let x = a; x <= b; x++) for (let y = row; y < ROWS; y++) g[y][x] = 1;
   for (const [a, b, row] of d.plats) for (let x = a; x <= b; x++) g[row][x] = 2;
   if (d.exits.left === undefined) for (let y = 0; y < ROWS; y++) g[y][0] = 1;
