@@ -167,7 +167,7 @@ function drawEnding(g) {
 // ---------- loop ----------
 let last = 0, acc = 0;
 function frame(ts) { const dt = Math.min(.1, (ts - last) / 1000 || 0); last = ts; acc += dt; while (acc >= DT) { update(DT); acc -= DT; } render(); requestAnimationFrame(frame); }
-G.step = (n = 1) => { for (let i = 0; i < n; i++) update(DT); render(); };
+G.step = (n = 1) => { for (let i = 0; i < n; i++) update(DT); if (G.renderSteps !== false) render(); };
 G.P = P; G.STATS = STATS; G.held = held; G.buf = buf; G.press = press; G.release = release; G.enterRoom = enterRoom; G.startGame = startGame;
 G.threats = () => { const out = []; for (const e of G.foes()) { const t = e.threat && e.threat(); if (t) out.push(t); }
   for (const s of G.shots) { if (s.kind === 'pillar') { if (!s.hitP && s.t < s.warn + s.act) out.push({ box: s, t: s.warn - s.t, dur: s.act, parry: false, label: 'boss:toll' }); }

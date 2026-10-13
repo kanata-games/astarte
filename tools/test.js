@@ -6,10 +6,10 @@ let fails = 0; const ok = (n, c, i) => { if (!c) fails++; console.log((c ? 'PASS
 (async () => {
   const srv = await S.start(ROOT), br = await chromium.launch(), errs = [];
   const open = async () => { const p = await br.newPage({ viewport: { width: 768, height: 576 } }); p.on('console', m => m.type() === 'error' && errs.push(m.text())); p.on('pageerror', e => errs.push(e.message));
-    await p.goto(srv.url + 'index.html?test'); await p.evaluate(`window.installBot = ${BOT}`); return p; };
+    await p.goto(srv.url + 'index.html?test'); await p.evaluate(`window.installBot = ${BOT}; G.renderSteps = false;`); return p; };
   let p = await open();
   // 1. tour every room
-  const tour = await p.evaluate(() => { G.startGame(); const r = []; for (let i = 0; i < 5; i++) { G.enterRoom(i, 'left'); G.step(60); r.push([G.room.def.name, G.enemies.length]); } return r; });
+  const tour = await p.evaluate(() => { G.renderSteps = true; G.startGame(); const r = []; installBot({ fight: true }); for (let i = 0; i < 5; i++) { G.enterRoom(i, 'left'); G.step(60); r.push([G.room.def.name, G.enemies.length]); } G.step(600); G.bot = null; G.renderSteps = false; return r; });
   ok('all rooms load', tour.length === 5, tour);
   // 2. parry -> stagger -> riposte
   const par = await p.evaluate(() => { G.startGame(); G.enterRoom(0); const P = G.P; P.x = 200; P.face = 1; G.step(5);
@@ -37,6 +37,12 @@ let fails = 0; const ok = (n, c, i) => { if (!c) fails++; console.log((c ? 'PASS
   const pan = await p.evaluate(() => { G.startGame(); G.enterRoom(2, 'left'); G.enemies = []; const P = G.P; P.x = 33 * 16 + 8 - 9; P.y = 11 * 16 - 60; G.step(60); const got = P.weapons.slice();
     G.press('swap'); G.step(1); G.release('swap'); G.step(5); G.press('light'); G.step(1); G.release('light'); G.step(40); return { got, cur: P.weapons[P.wi] }; });
   ok('frying pan pickup + swap', pan.got.includes('pan') && pan.cur === 'pan', pan);
+  // 6b. combos + distinct per-weapon motion sets
+  const combo = await p.evaluate(() => { const out = {}; for (const w of ['scythe', 'pan']) { G.startGame(); G.enemies = []; const P = G.P; P.weapons = [w]; P.wi = 0; P.x = 200; G.step(5); const seen = [];
+      for (let k = 0; k < 3; k++) { G.press('light'); G.step(1); G.release('light'); G.step(2); seen.push(P.anim); while (P.state === 'attack' && P.st < P.move.wu + P.move.act + P.move.rec * .6) G.step(1); }
+      while (P.state !== 'free') G.step(1); G.step(30); G.press('heavy'); G.step(1); G.release('heavy'); seen.push(P.anim); out[w] = { seen, frames: ['light1', 'light2', 'light3', 'heavy', 'parryflash'].map(a => ASTA.get(w).meta.anims[a].n) }; }
+    return out; });
+  ok('3-hit combos + heavy on both weapons, distinct frame counts', ['scythe', 'pan'].every(w => combo[w].seen.join() === 'light1,light2,light3,heavy') && combo.scythe.frames.join() !== combo.pan.frames.join(), combo);
   // 7. every normal enemy attack avoidable (dodge-only bot, 40 s each, no hits)
   for (const k of ['husk', 'guard', 'wisp', 'acolyte']) {
     const r = await p.evaluate(k => { G.startGame(); installBot({ fight: false }); const P = G.P; P.hp = 1e6; P.x = 150; G.step(2);

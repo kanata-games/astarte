@@ -8,7 +8,7 @@ function useStam(n) { if (P.stam <= 0) return false; P.stam -= n; P.stamDelay = 
 function pBox() { return { x: P.x, y: P.y, w: P.w, h: P.h }; }
 function startAttack(kind) {
   const W = weapon();
-  if (kind === 'light') { P.combo = (P.t - (P.comboT || -9) < .3 && P.combo < 3) ? P.combo + 1 : 1; kind = P.combo === 1 ? 'light' : 'light' + P.combo; } else P.combo = 0;
+  if (kind === 'light') { P.combo = (P.t - (P.comboT || -9) < .3 && (P.combo || 0) < 3 && P.combo) ? P.combo + 1 : 1; kind = P.combo === 1 ? 'light' : 'light' + P.combo; } else P.combo = 0;
   const m = W[kind]; if (!useStam(m.stam)) return;
   P.anim = kind === 'light' ? 'light1' : kind; P.state = 'attack'; P.st = 0; P.move = m; P.moveKind = kind; P.hitSet = new Set(); (SFX[(W.sfx && W.sfx.swing) || 'swing'])();
 }
