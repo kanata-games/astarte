@@ -53,4 +53,6 @@ function sfx(f, d = .08, type = 'square', vol = .06, slide = 0) {
 }
 const SFX = { swing: () => sfx(300, .07, 'triangle', .05, -200), hit: () => sfx(140, .1, 'square', .07, -80), parry: () => { sfx(1400, .25, 'triangle', .08, -300); sfx(2100, .18, 'sine', .05) },
   roll: () => sfx(90, .1, 'sine', .05), hurt: () => sfx(220, .18, 'sawtooth', .06, -150), bell: () => { sfx(330, .9, 'sine', .07); sfx(495, .7, 'sine', .04) }, souls: () => sfx(880, .2, 'sine', .05, 400),
+  whoosh: () => { sfx(180, .16, 'triangle', .05, -120); sfx(90, .2, 'sine', .04) }, swish: () => sfx(520, .06, 'triangle', .04, -250),
+  bonk: () => { sfx(240, .12, 'square', .06, -60); sfx(720, .25, 'sine', .04) }, clang: () => { sfx(988, .9, 'sine', .07); sfx(1480, .7, 'sine', .04); sfx(2220, .5, 'triangle', .03); sfx(660, 1.1, 'sine', .04) },
   heal: () => sfx(520, .3, 'sine', .05, 300), die: () => sfx(160, .8, 'sawtooth', .06, -120) };

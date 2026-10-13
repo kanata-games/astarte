@@ -148,7 +148,9 @@ const ASTA = {};
     if (!F.two && F.wHand === 'front') { // relaxed back arm (hidden behind cape)
       const shB = [-5 + b.hx * .7, b.ty + 1]; line(g, shB[0], shB[1], -8 + b.tx, b.ty + 12, 5, C.navyD); px(g, -10 + b.tx, b.ty + 11, 4, 3, C.skin); }
     if (!F.dropW) arms(g, F, b, wpn, 'front');
-    if (F.smear) smear(g, F.smear);
+    if (F.smear) for (const sm of [].concat(F.smear)) smear(g, sm);
+    if (F.rings) for (const r of F.rings) { g.strokeStyle = r[3] || '#ffe08a'; g.lineWidth = 1; g.beginPath(); g.arc(r[0], r[1], r[2], 0, 7); g.stroke(); }
+    if (F.dizzy) for (let i = 0; i < 3; i++) { const a = F.dizzy + i * 2.1; const x = Math.cos(a) * 10 + 2, y = -68 + Math.sin(a) * 3; px(g, x - 2, y, 5, 1, '#ffe08a'); px(g, x, y - 2, 1, 5, '#ffe08a'); }
     if (F.burst) burst(g, F.burstAt ? F.burstAt[0] : 14, F.burstAt ? F.burstAt[1] : -44, F.burst, F.burstCol || '#ffffff');
     if (F.heal) for (let i = 0; i < 6; i++) { const a = i + F.heal * 2; px(g, Math.cos(a) * (8 + F.heal * 4), -30 - F.heal * 10 - i * 3, 2, 2, i % 2 ? '#ffcf6a' : '#fff2c0'); }
     g.restore();
@@ -197,12 +199,7 @@ const ASTA = {};
     A.fall = [{ fl: [5, -2], bl: [-6, -4], capeUp: .6, flare: .3, hairUp: 1, tail: -.4, tailUp: 1, skirt: .8, wa: idleA - .1, hand: [9, -40] }, { fl: [4, 0], bl: [-6, -2], capeUp: 1, flare: .4, hairUp: 2, tail: -.6, tailUp: 1.2, skirt: 1, ear: 1, wa: idleA - .2, hand: [10, -42] }];
     A.land = [{ crouch: 5, fl: [7, 0], bl: [-7, 0], flare: .8, skirt: 1.2, tail: .8, eye: 'closed', wa: idleA + .3, hand: [H0x + 2, H0y + 5] }, { crouch: 2, fl: [5, 0], bl: [-5, 0], flare: .4, skirt: .5, tail: .4, wa: idleA + .1, hand: [H0x + 1, H0y + 2] }];
     A.roll = [0, 1, 2, 3, 4, 5].map(i => ({ roll: 1, rot: i / 6 * PI * 2 }));
-    for (const k of ['light1', 'light2', 'light3', 'heavy']) A[k] = attack(ATK[wpn][k], wpn);
-    A.parry = [{ wa: wpn === 'pan' ? -.9 : -.45, hand: [13, -44], lean: -2, two: true, fl: [7, 0], bl: [-7, 0], flare: .3, eye: 'fierce', hot: true },
-      { wa: wpn === 'pan' ? -.8 : -.4, hand: [14, -44], lean: -2, two: true, fl: [7, 0], bl: [-7, 0], flare: .4, eye: 'fierce' },
-      { wa: -1.0, hand: [11, -40], lean: -1, two: true, fl: [6, 0], bl: [-6, 0], flare: .2 }, { wa: idleA + .2, hand: [H0x + 1, H0y + -1], lean: 0, flare: .1 }];
-    A.parryflash = [6, 12, 9].map((s, i) => Object.assign({}, A.parry[0], { burst: s, burstAt: [22, -50], burstCol: i === 1 ? '#ffffff' : '#bfe0ff', flare: .6 + i * .1, ear: 1 }));
-    A.riposte = attack(ATK[wpn].riposte, wpn).map(f => Object.assign(f, { eye: 'fierce' }));
+    Object.assign(A, ASTA.MOTIONS[wpn](wpn, { attack, idleA, H0x, H0y }));
     A.hit = [{ lean: -4, eye: 'wince', flare: -.8, hairUp: 1, tail: 1, tailUp: 1, ear: -1, crouch: 1, fl: [6, 0], bl: [-8, 0], wa: idleA - .4, hand: [6, -40] },
       { lean: -3, eye: 'wince', flare: -.4, tail: .6, crouch: 2, fl: [6, 0], bl: [-7, 0], wa: idleA - .3, hand: [H0x + -1, H0y + -2] }, { lean: -1, flare: .2, tail: .2, crouch: 1, wa: idleA - .1, hand: [H0x + 0, H0y + -1] }];
     A.death = [{ lean: -4, eye: 'wince', flare: -.6, hairUp: 1, tail: 1, wa: idleA - .5, hand: [6, -40] }, { crouch: 6, lean: 2, eye: 'closed', flare: .5, tail: -.2, wa: idleA + .6, hand: [H0x + 2, H0y + 6] },
@@ -214,9 +211,63 @@ const ASTA = {};
     A.flask = [fl([9, -34], [9, -34], {}), fl([10, -44], [10, -44], {}), fl([7, -50], [7, -52], { lean: -2, headDy: -1, eye: 'closed' }), fl([7, -51], [7, -53], { lean: -3, headDy: -1, eye: 'closed', ear: 1 }),
       fl([9, -40], [9, -40], { lean: -1 }), fl([8, -36], null, { heal: 1, eye: 'open' })];
     A.turn = [{ mirror: true, lean: -2, flare: -.8, tail: 1, skirt: .6, wa: idleA, hand: [H0x + 0, H0y + 0] }, { front: true, flare: .2, tail: 0, skirt: .8, wa: -1.57, hand: [H0x + 0, H0y + 0] }, { lean: 1, flare: .9, tail: -1, skirt: .6, wa: idleA + .1, hand: [H0x + 0, H0y + 0] }];
+    if (ASTA.MOTIONS[wpn].base) ASTA.MOTIONS[wpn].base(A);
     if (wpn === 'pan') for (const k in A) for (const f of A[k]) if (f.wBehind === undefined) f.wBehind = false;
     return A;
   }
+  // ===== per-weapon motion sets: every weapon owns its attack/parry/riposte frames (+ optional locomotion overrides via base(A)) =====
+  // Frames tagged ph:'wu'|'act'|'rec' are time-mapped by the game onto that move's windup/active/recovery from WEAPONS.
+  const tag = (arr, ph) => arr.map(f => Object.assign({ ph }, f));
+  ASTA.MOTIONS = {
+    scythe(w, h) { const M = {}, two = true, F = (o) => Object.assign({ two, wBehind: false, eye: 'fierce' }, o);
+      M.light1 = h.attack(ATK.scythe.light1, w);                  // wide diagonal reap
+      M.light2 = h.attack(ATK.scythe.light2, w);                  // rising reverse reap
+      // light3: full-body SPIN - sweeps both sides
+      M.light3 = [...tag([F({ wa: 2.7, hand: [-6, -34], lean: -3, crouch: 3, flare: .6, tail: .8, fl: [8, 0], bl: [-9, 0] }), F({ wa: 2.9, hand: [-9, -32], lean: -4, crouch: 4, flare: .8, tail: 1, fl: [9, 0], bl: [-10, 0], ear: 1 })], 'wu'),
+        ...tag([F({ wa: .2, hand: [14, -32], lean: 4, flare: -.9, skirt: 1.2, smear: { c: [4, -34], a0: 2.6, a1: .3, r: 58, col: '#a8c0ff' } }),
+          F({ front: true, wa: 1.57, hand: [4, -30], flare: -1, skirt: 1.4, tail: -1, smear: { c: [0, -34], a0: .3, a1: 1.9, r: 58, col: '#a8c0ff' } }),
+          F({ mirror: true, wa: .3, hand: [14, -32], lean: 3, flare: -.9, skirt: 1.4, smear: { c: [4, -34], a0: 2.9, a1: .3, r: 58, col: '#a8c0ff' } }),
+          F({ wa: -2.0, hand: [6, -46], lean: -1, flare: .9, skirt: 1.2, smear: { c: [0, -36], a0: 1.6, a1: 3.9, r: 58, col: '#a8c0ff' }, burst: 6, burstAt: [-40, -20], burstCol: '#c8d8ff' })], 'act'),
+        ...tag([F({ wa: -2.1, hand: [8, -40], lean: 0, flare: 1, skirt: .8, tail: -1 }), F({ wa: -2.25, hand: [9, -34], flare: .5, skirt: .4, tail: -.5, eye: 'open' })], 'rec')];
+      // heavy: huge overhead arc (270 deg), crouched wind-up, lunging leap
+      M.heavy = [...tag([F({ wa: -3.0, hand: [-2, -40], lean: -3, crouch: 4, flare: .4, tail: .6 }), F({ wa: -3.6, hand: [-8, -54], lean: -5, crouch: 6, flare: .7, tail: 1, ear: 1, hot: true }),
+          F({ wa: -3.8, hand: [-8, -58], lean: -6, crouch: 2, by: -3, flare: .9, tail: 1, ear: 1, hot: true, fl: [6, -3], bl: [-6, -1] })], 'wu'),
+        ...tag([F({ wa: -1.2, hand: [6, -56], lean: 2, by: -4, flare: -.6, skirt: .8, fl: [10, -2], bl: [-8, 0], smear: { c: [0, -44], a0: -3.8, a1: -1.2, r: 62, col: '#8ab0ff' } }),
+          F({ wa: 1.5, hand: [16, -24], lean: 7, crouch: 4, flare: -1, skirt: 1.3, fl: [12, 0], bl: [-9, 0], smear: { c: [4, -40], a0: -1.4, a1: 1.5, r: 62, col: '#8ab0ff' }, burst: 9, burstAt: [56, -6], burstCol: '#bcd0ff' })], 'act'),
+        ...tag([F({ wa: 1.65, hand: [16, -22], lean: 6, crouch: 5, flare: 1, skirt: 1, tail: -1, fl: [12, 0], bl: [-9, 0] }), F({ wa: 1.2, hand: [14, -26], lean: 4, crouch: 3, flare: .8, tail: -.8, fl: [10, 0], bl: [-8, 0] }),
+          F({ wa: -1.5, hand: [11, -34], lean: 1, flare: .4, tail: -.4, eye: 'open' })], 'rec')];
+      M.parry = [F({ wa: -.15, hand: [14, -44], lean: -2, fl: [7, 0], bl: [-7, 0], flare: .3, hot: true }), F({ wa: -.1, hand: [15, -44], lean: -2, fl: [7, 0], bl: [-7, 0], flare: .4 }),
+        F({ wa: -1.0, hand: [11, -40], lean: -1, fl: [6, 0], bl: [-6, 0], flare: .2 }), { wa: -2.2, hand: [10, -33], lean: 0, flare: .1 }];
+      M.parryflash = [5, 12, 8].map((s, i) => Object.assign({}, M.parry[0], { burst: s, burstAt: [26, -48], burstCol: i === 1 ? '#ffffff' : '#9ab8ff', flare: .6 + i * .1, ear: 1,
+        smear: i < 2 ? { c: [26, -48], a0: -1.2, a1: 1.2, r: 8 + i * 6, col: '#bcd0ff' } : null }));
+      M.riposte = h.attack(ATK.scythe.riposte, w);
+      return M; },
+    pan(w, h) { const M = {}, F = (o) => Object.assign({ wBehind: false, eye: 'fierce' }, o);
+      // quick bonks: 1 windup frame, 1 active, 2 recovery
+      const bonk = (a0, a1, h0, h1, l0, l1, extra) => [...tag([F({ wa: a0, hand: h0, lean: l0, flare: .3, tail: .5, ear: 1 })], 'wu'),
+        ...tag([F(Object.assign({ wa: a1, hand: h1, lean: l1, flare: -.5, skirt: .6, fl: [9, 0], bl: [-7, 0], smear: { c: [(h0[0] + h1[0]) / 2, (h0[1] + h1[1]) / 2], a0: a0, a1: a1, r: 25, col: '#ffe8c0' }, burst: 4, burstAt: [h1[0] + Math.cos(a1) * 24, h1[1] + Math.sin(a1) * 24], burstCol: '#ffffff' }, extra || {}))], 'act'),
+        ...tag([F({ wa: a1 + .2, hand: h1, lean: l1 * .6, flare: .6, tail: -.6, fl: [8, 0], bl: [-6, 0] }), F({ wa: h.idleA, hand: [h.H0x, h.H0y], flare: .3, tail: -.3, eye: 'open' })], 'rec')];
+      M.light1 = bonk(-2.2, .3, [2, -48], [14, -36], -2, 3);
+      M.light2 = bonk(.9, -1.0, [14, -32], [12, -46], 3, -1);
+      M.light3 = bonk(-2.9, .9, [2, -56], [14, -30], -3, 5, { by: -4, fl: [9, -4], bl: [-7, -2] }); // hop bonk
+      // heavy: comedic over-the-head smash -> dizzy
+      M.heavy = [...tag([F({ wa: -2.6, hand: [0, -54], lean: -3, flare: .3, tail: .8, ear: 1 }), F({ wa: -3.4, hand: [-6, -60], lean: -6, by: -2, flare: .6, tail: 1, eye: 'closed', ear: 1 }),
+          F({ wa: -3.9, hand: [-9, -62], lean: -8, by: -6, flare: .9, tail: 1.2, tailUp: 1, eye: 'closed', fl: [5, -5], bl: [-6, -3], hot: true })], 'wu'),
+        ...tag([F({ wa: -.6, hand: [10, -50], lean: 2, by: -4, flare: -.8, skirt: 1, smear: { c: [2, -54], a0: -3.9, a1: -.6, r: 28, col: '#ffb860' } }),
+          F({ wa: 1.45, hand: [16, -24], lean: 8, crouch: 7, flare: -1, skirt: 1.4, fl: [12, 0], bl: [-9, 0], hot: true, smear: { c: [12, -36], a0: -.8, a1: 1.45, r: 28, col: '#ffb860' }, burst: 12, burstAt: [22, -2], burstCol: '#ffd88a' })], 'act'),
+        ...tag([F({ wa: 1.5, hand: [16, -22], lean: 7, crouch: 6, flare: 1, skirt: 1, tail: -1, eye: 'closed', dizzy: .1 }), F({ wa: 1.4, hand: [15, -24], lean: 5, crouch: 4, flare: .7, tail: -.6, eye: 'wince', dizzy: 2.2 }),
+          F({ wa: 1.0, hand: [13, -28], lean: 2, crouch: 2, flare: .4, eye: 'closed', dizzy: 4.3, ear: -1 }), F({ wa: h.idleA, hand: [h.H0x, h.H0y], flare: .2, eye: 'open' })], 'rec')];
+      // parry: pan raised like a shield; flash = bell-like clang rings
+      M.parry = [F({ wa: -1.57, hand: [15, -40], lean: -2, fl: [7, 0], bl: [-7, 0], flare: .3, hot: true }), F({ wa: -1.57, hand: [15, -40], lean: -2, fl: [7, 0], bl: [-7, 0], flare: .4 }),
+        F({ wa: -1.2, hand: [12, -38], lean: -1, fl: [6, 0], bl: [-6, 0] }), { wa: h.idleA, hand: [h.H0x, h.H0y], wBehind: false }];
+      M.parryflash = [0, 1, 2].map(i => Object.assign({}, M.parry[0], { ear: 1, eye: i === 1 ? 'closed' : 'fierce', burst: [4, 9, 6][i], burstAt: [15, -64], burstCol: '#ffffff',
+        rings: [[15, -64, 10 + i * 5, '#ffe08a'], [15, -64, 16 + i * 7, i === 2 ? '#c8a050' : '#fff2c0']].slice(0, i + 1), lean: -2 - i }));
+      M.riposte = h.attack(ATK.pan.riposte, w);
+      M.idle = [0, 1, 2, 3, 4, 5].map(i => ({ by: [0, -1, -1, 0, 1, 1][i], tail: S(i / 6 * PI * 2) * 1.3, ear: i === 2 ? 1 : i === 5 ? -1 : 0, eye: i === 4 ? 'closed' : 'open', wa: -1.15 + S(i / 6 * PI * 2) * .15, hand: [10, -38 + [0, -1, -1, 0, 1, 1][i]], flare: S(i / 6 * PI * 2) * .2, wBehind: false }));
+      M.run = [0, 1, 2, 3, 4, 5, 6, 7].map(i => { const p = i / 8 * PI * 2, c = Math.cos(p), s = S(p);
+        return { fl: [3 + c * 8, -Math.max(0, s) * 6], bl: [-3 - c * 8, -Math.max(0, -s) * 6], by: -Math.round(Math.abs(s) * 3), lean: 2, flare: .6 + s * .3, tail: -.6 + s * .6, skirt: .5 + Math.abs(c) * .4, wa: -.6 + c * .7, hand: [9 + c * 4, -35], wBehind: false, ear: i % 4 === 0 ? 1 : 0 }; });
+      return M; },
+  };
   ASTA.ORDER = ['idle', 'run', 'jump', 'fall', 'land', 'roll', 'light1', 'light2', 'light3', 'heavy', 'parry', 'parryflash', 'riposte', 'hit', 'death', 'rest', 'flask', 'turn'];
   ASTA.build = function (wpn) {
     const A = anims(wpn), cols = 8, rows = ASTA.ORDER.length, c = mk(cols * AC_W, rows * AC_H), g = c.getContext('2d'), meta = { cw: AC_W, ch: AC_H, ax: AC_AX, ay: AC_AY, anims: {} };

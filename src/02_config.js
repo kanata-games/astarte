@@ -1,21 +1,22 @@
 // ===== data: weapons / enemies / boss =====
 const VW = 384, VH = 288, T = 16, DT = 1 / 60, GRAV = 900;
-// Weapons are pure data: add a new entry (and a draw style in 04_art.js) to add a weapon.
+// Weapons are pure data: add an entry here (timings/hitboxes/sfx) + a motion set in ASTA.MOTIONS (src/04b_astarte.js)
+// + a draw style in weapon() there. Animation frames tagged wu/act/rec are stretched onto these timings.
 // move fields: wu=windup s, act=active s, rec=recovery s, dmg, stam, range px (in front), h=hitbox height, lunge px/s during windup+active,
 // arc = [startAngle, endAngle] of the weapon sprite through the swing (radians, 0 = forward, negative = up)
 const WEAPONS = {
   scythe: { name: '星詠みの大鎌', draw: 'scythe', riposteMul: 3.0,
     light: { wu: .22, act: .12, rec: .30, dmg: 34, stam: 18, range: 70, h: 56, lunge: 60, arc: [-2.2, .9], poise: 20 },
     light2: { wu: .16, act: .12, rec: .30, dmg: 34, stam: 18, range: 70, h: 64, lunge: 70, poise: 20 },
-    light3: { wu: .28, act: .16, rec: .42, dmg: 48, stam: 24, range: 84, h: 64, lunge: 110, poise: 40 },
+    light3: { wu: .26, act: .30, rec: .40, dmg: 44, stam: 26, range: 76, h: 64, lunge: 50, poise: 40, both: true },   // spin: hits both sides
     heavy: { wu: .55, act: .16, rec: .45, dmg: 80, stam: 36, range: 84, h: 78, lunge: 40, arc: [-2.8, 1.3], poise: 60 },
-    parry: { window: .20, stam: 14, dur: .45 } },
+    parry: { window: .20, stam: 14, dur: .45 }, sfx: { swing: 'whoosh', parry: 'parry' } },
   pan: { name: 'ミャオのフライパン', draw: 'pan', riposteMul: 4.0,
     light: { wu: .12, act: .08, rec: .18, dmg: 18, stam: 10, range: 36, h: 36, lunge: 50, arc: [-1.8, .6], poise: 10 },
     light2: { wu: .10, act: .08, rec: .18, dmg: 18, stam: 10, range: 36, h: 36, lunge: 60, poise: 10 },
     light3: { wu: .20, act: .10, rec: .30, dmg: 30, stam: 16, range: 40, h: 44, lunge: 120, poise: 50 },
-    heavy: { wu: .40, act: .12, rec: .30, dmg: 48, stam: 26, range: 42, h: 48, lunge: 90, arc: [-2.6, 1.0], poise: 80 },
-    parry: { window: .28, stam: 10, dur: .40 } },   // light weapon = generous parry, big riposte
+    heavy: { wu: .42, act: .12, rec: .55, dmg: 52, stam: 26, range: 44, h: 48, lunge: 90, arc: [-2.6, 1.0], poise: 80 },
+    parry: { window: .28, stam: 10, dur: .40 }, sfx: { swing: 'swish', parry: 'clang', hit: 'bonk' } },   // light weapon = generous parry, big riposte
 };
 // Enemies. attack.parry=true -> white telegraph flash (parryable), false -> red (dodge it).
 const ENEMIES = {

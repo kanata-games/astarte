@@ -10,7 +10,7 @@ function startAttack(kind) {
   const W = weapon();
   if (kind === 'light') { P.combo = (P.t - (P.comboT || -9) < .3 && P.combo < 3) ? P.combo + 1 : 1; kind = P.combo === 1 ? 'light' : 'light' + P.combo; } else P.combo = 0;
   const m = W[kind]; if (!useStam(m.stam)) return;
-  P.anim = kind === 'light' ? 'light1' : kind; P.state = 'attack'; P.st = 0; P.move = m; P.moveKind = kind; P.hitSet = new Set(); SFX.swing();
+  P.anim = kind === 'light' ? 'light1' : kind; P.state = 'attack'; P.st = 0; P.move = m; P.moveKind = kind; P.hitSet = new Set(); (SFX[(W.sfx && W.sfx.swing) || 'swing'])();
 }
 function tryRiposte() {
   const W = weapon(); const list = G.foes().filter(e => e.hp > 0 && e.stagger > 0 && e.parried);
@@ -25,7 +25,7 @@ function hurtPlayer(dmg, src, parryable, label) {
   const W = weapon();
   if (P.state === 'parry' && P.st < W.parry.window && parryable) {
     const sx = src ? src.x + src.w / 2 : P.x; if (Math.sign(sx - (P.x + P.w / 2)) === P.face || Math.abs(sx - P.x - P.w / 2) < 8) {
-      STATS.parried++; SFX.parry(); G.flash = .12; G.hitstop = .12; fx('parry', P.x + P.w / 2 + P.face * 14, P.y + 18); if (src && src.onParried) src.onParried(); P.state = 'free'; P.parryFlashT = .3; P.stam = Math.min(pMaxStam(), P.stam + 10); return 'parried'; } }
+      STATS.parried++; (SFX[(W.sfx && W.sfx.parry) || 'parry'])(); G.flash = .12; G.hitstop = .12; fx('parry', P.x + P.w / 2 + P.face * 14, P.y + 18); if (src && src.onParried) src.onParried(); P.state = 'free'; P.parryFlashT = .3; P.stam = Math.min(pMaxStam(), P.stam + 10); return 'parried'; } }
   let d = dmg; if (P.state === 'parry') d *= 1.0;
   P.hp -= d; STATS.taken++; STATS.takenBy[label || '?'] = (STATS.takenBy[label || '?'] || 0) + 1; SFX.hurt(); G.shake = .2; G.hitstop = .06;
   fx('blood', P.x + P.w / 2, P.y + 20);
@@ -56,8 +56,8 @@ function updatePlayer(dt) {
     const m = P.move; const ph = P.st < m.wu ? 'wu' : P.st < m.wu + m.act ? 'act' : 'rec';
     P.vx = ph !== 'rec' ? P.face * m.lunge : P.vx * .8;
     if (ph === 'act') {
-      const hb = { x: P.face > 0 ? P.x + P.w / 2 : P.x + P.w / 2 - m.range, y: P.y + P.h - m.h, w: m.range, h: m.h };
-      for (const e of G.foes()) if (e.hp > 0 && !P.hitSet.has(e) && overlap(hb, e)) { P.hitSet.add(e); e.damage(m.dmg * pStr(), m.poise, P.face); }
+      const hb = m.both ? { x: P.x + P.w / 2 - m.range, y: P.y + P.h - m.h, w: m.range * 2, h: m.h } : { x: P.face > 0 ? P.x + P.w / 2 : P.x + P.w / 2 - m.range, y: P.y + P.h - m.h, w: m.range, h: m.h };
+      for (const e of G.foes()) if (e.hp > 0 && !P.hitSet.has(e) && overlap(hb, e)) { P.hitSet.add(e); e.damage(m.dmg * pStr(), m.poise, P.face); if (W.sfx && W.sfx.hit) SFX[W.sfx.hit](); }
     }
     if (P.st > m.wu + m.act + m.rec * .55 && (peek('light') || peek('heavy') || peek('roll'))) { P.state = 'free'; P.comboT = P.t; }
     else if (P.st > m.wu + m.act + m.rec) { P.state = 'free'; P.comboT = P.t; }
@@ -84,10 +84,12 @@ function updatePlayer(dt) {
   if (P.y > VH + 40) { P.hp = 0; P.state = 'dead'; P.st = 2; }
 }
 function playerPose() { // -> { anim, f } into the アスターテ sheets
-  const s = P.state, ph3 = (st, wu, act, rec) => st < wu ? st / wu * 2 : st < wu + act ? 2 + (st - wu) / act * 2 : 4 + Math.min(1.99, (st - wu - act) / rec * 2);
+  const s = P.state, ph3 = (st, wu, act, rec, anim) => { // map time onto the frames tagged wu/act/rec of this weapon's motion
+    const a = ASTA.get(weapon().draw).meta.anims[anim], ph = a.ph, p = st < wu ? 'wu' : st < wu + act ? 'act' : 'rec', t = p === 'wu' ? st / wu : p === 'act' ? (st - wu) / act : Math.min(.999, (st - wu - act) / rec);
+    const idx = []; ph.forEach((x, i) => { if (x === p) idx.push(i); }); return idx.length ? idx[Math.min(idx.length - 1, t * idx.length | 0)] : 0; };
   if (s === 'roll') return { anim: 'roll', f: P.st / .48 * 6 };
-  if (s === 'attack') { const m = P.move; return { anim: P.anim, f: ph3(P.st, m.wu, m.act, m.rec) }; }
-  if (s === 'riposte') return { anim: 'riposte', f: ph3(P.st, .35, .15, .3) };
+  if (s === 'attack') { const m = P.move; return { anim: P.anim, f: ph3(P.st, m.wu, m.act, m.rec, P.anim) }; }
+  if (s === 'riposte') return { anim: 'riposte', f: ph3(P.st, .35, .15, .3, 'riposte') };
   if (s === 'parry') { if (P.parryFlashT > 0) return { anim: 'parryflash', f: (.3 - P.parryFlashT) / .1 }; const w = weapon().parry; return { anim: 'parry', f: P.st < w.window ? (P.st < .05 ? 0 : 1) : 2 + (P.st - w.window) / (w.dur - w.window) * 2 }; }
   if (P.parryFlashT > 0) return { anim: 'parryflash', f: (.3 - P.parryFlashT) / .1 };
   if (s === 'hurt') return { anim: 'hit', f: P.st / .32 * 3 };
