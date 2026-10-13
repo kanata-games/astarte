@@ -1,0 +1,15 @@
+// screenshots of the hand-made Astarte sheet in play -> screenshots/art_*.png
+const { chromium } = require('playwright'); const S = require('./serve.js'); const path = require('path');
+(async () => { const ROOT = path.resolve(__dirname, '..'), srv = await S.start(ROOT), b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 768, height: 576 } });
+  const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => m.type() === 'error' && errs.push(m.text()));
+  await p.goto(srv.url + 'index.html?test'); await p.waitForFunction(() => ASTA.get('scythe').ready);
+  const shot = n => p.screenshot({ path: path.join(ROOT, 'screenshots', n + '.png') });
+  await p.evaluate(() => { G.startGame(); const P = G.P; P.x = 250; P.face = 1; G.step(90); G.areaT = 0; G.toasts = []; G.step(1); });
+  await shot('art_01_idle_forecourt');
+  await p.evaluate(() => { G.enterRoom(1, 'left'); G.enemies = G.enemies.slice(0, 1); const P = G.P, e = G.enemies[0]; P.x = e.x - 70; P.face = 1; G.areaT = 0; G.toasts = []; G.step(5); e.cd = 9;
+    G.press('heavy'); G.step(1); G.release('heavy'); while (P.st < P.move.wu + P.move.act * .6) G.step(1); });
+  await shot('art_02_heavy_trail');
+  await p.evaluate(() => { const P = G.P; G.step(60); const e = G.enemies[0]; e.cd = 0; e.hp = 999; P.face = 1; P.x = e.x - 44;
+    for (let i = 0; i < 400; i++) { if (e.state === 'windup' && e.atk.wu - e.st < .08 && P.state === 'free') G.press('parry'); G.step(1); G.release('parry'); if (P.parryFlashT > 0 && P.parryFlashT < .26) break; } });
+  await shot('art_03_parry');
+  console.log('errors', JSON.stringify(errs)); await b.close(); srv.close(); })();
