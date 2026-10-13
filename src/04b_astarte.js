@@ -276,17 +276,47 @@ const ASTA = {};
     return { canvas: c, meta };
   };
   // runtime: prefer exported PNG sheets (assets/), fall back to building them in-browser
+  // ---- loader: a weapon may name a hand-made art sheet (WEAPONS[w].art); otherwise the procedural set is used ----
+  // art: { sheet: png path, meta: EMBEDDED_META key, map: {gameAnim: artAnim}, fix: {frameId: [dx, dy]} }
   ASTA.sheets = {};
+  function artSheet(wpn, A) {
+    const J = (typeof EMBEDDED_META !== 'undefined' && EMBEDDED_META[A.meta]) || null; if (!J) return null;
+    const byName = {}; for (const an of J.animations) byName[an.name] = an;
+    const meta = { cw: J.frame_w, ch: J.frame_h, ax: J.cx, ay: J.feet_y, anims: {}, art: true, fix: A.fix || {} };
+    for (const game of ASTA.ORDER.concat(['apex'])) { const an = byName[A.map[game] || game] || byName.idle, act = an.active || [];
+      const first = act.length ? an.frames.indexOf(act[0]) : -1, last = act.length ? an.frames.indexOf(act[act.length - 1]) : -1;
+      meta.anims[game] = { frames: an.frames.slice(), ms: an.ms.slice(), n: an.frames.length, ph: an.frames.map((f, i) => !act.length ? '' : i < first ? 'wu' : i <= last ? 'act' : 'rec'), active: act, hitbox: an.hitbox || {} }; }
+    const im = new Image(); const s = { img: null, meta, ready: false }; im.onload = () => { s.img = im; s.ready = true; }; im.src = A.sheet; return s;
+  }
   ASTA.get = function (wpn) {
     let s = ASTA.sheets[wpn]; if (s) return s;
-    const b = ASTA.build(wpn); s = ASTA.sheets[wpn] = { img: b.canvas, meta: b.meta, flip: null };
-    if (!TESTMODE_ART) { const im = new Image(); im.onload = () => { s.img = im; s.flip = null; }; im.src = 'assets/astarte_' + wpn + '.png'; }
+    const W = WEAPONS[wpn], A = W && W.art; if (A) { s = artSheet(wpn, A); if (s) { s.fallback = null; return ASTA.sheets[wpn] = s; } }
+    const b = ASTA.build(wpn); s = ASTA.sheets[wpn] = { img: b.canvas, meta: b.meta, ready: true };
+    if (!TESTMODE_ART) { const im = new Image(); im.onload = () => { s.img = im; }; im.src = 'assets/astarte_' + wpn + '.png'; }
     return s;
   };
+  ASTA.anim = (wpn, anim) => { const m = ASTA.get(wpn).meta; return m.anims[anim] || m.anims.idle; };
   ASTA.draw = function (g, x, y, face, anim, f, wpn, alpha) {
-    const s = ASTA.get(WEAPONS[wpn] ? WEAPONS[wpn].draw : 'scythe'), m = s.meta, a = m.anims[anim] || m.anims.idle, fi = Math.max(0, Math.min(a.n - 1, f | 0));
+    let s = ASTA.get(wpn), m = s.meta;
+    if (!s.ready) { s = s.fallback || (s.fallback = (() => { const b = ASTA.build('scythe'); return { img: b.canvas, meta: b.meta }; })()); m = s.meta; }   // art still loading
+    const a = m.anims[anim] || m.anims.idle, fi = Math.max(0, Math.min(a.n - 1, f | 0));
     g.save(); g.translate(Math.round(x), Math.round(y)); if (face < 0) g.scale(-1, 1); if (alpha !== undefined) g.globalAlpha = alpha;
-    g.drawImage(s.img, fi * m.cw, a.row * m.ch, m.cw, m.ch, -m.ax, -m.ay, m.cw, m.ch); g.restore();
+    if (m.art) { const id = a.frames[fi], fx = m.fix[id] || [0, 0]; g.drawImage(s.img, id * m.cw, 0, m.cw, m.ch, -m.ax + fx[0], -m.ay + fx[1], m.cw, m.ch); }
+    else g.drawImage(s.img, fi * m.cw, a.row * m.ch, m.cw, m.ch, -m.ax, -m.ay, m.cw, m.ch);
+    g.restore();
+  };
+  // derive move timings + hitboxes from an art sheet (ms / active / hitbox), then apply per-weapon tuning overrides
+  ASTA.applyArt = function (wpn) {
+    const W = WEAPONS[wpn]; if (!W.art) return; const s = ASTA.get(wpn); if (!s.meta.art) return;
+    for (const [k, an] of [['light', 'light1'], ['light2', 'light2'], ['light3', 'light3'], ['heavy', 'heavy']]) {
+      const a = s.meta.anims[an], m = W[k]; let wu = 0, act = 0, rec = 0;
+      a.frames.forEach((f, i) => { const t = a.ms[i] / 1000; if (a.ph[i] === 'wu') wu += t; else if (a.ph[i] === 'act') act += t; else rec += t; });
+      Object.assign(m, { wu, act, rec: Math.max(rec, m.rec || 0) });
+      const boxes = a.active.map(f => a.hitbox[f]).filter(Boolean);
+      if (boxes.length) { const x0 = Math.min(...boxes.map(b => b.x)), y0 = Math.min(...boxes.map(b => b.y)), x1 = Math.max(...boxes.map(b => b.x + b.w)), y1 = Math.max(...boxes.map(b => b.y + b.h));
+        m.hb = { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; m.range = x1; m.h = y1 - y0; }
+      Object.assign(m, (W.tune || {})[k] || {}); }
+    const pa = s.meta.anims.parry; if (pa && W.tune && W.tune.parry) Object.assign(W.parry, W.tune.parry);
   };
 })();
 const TESTMODE_ART = false;

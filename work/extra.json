@@ -1,0 +1,90 @@
+{
+ "death_0": {
+  "layer": {
+   "exclude": [
+    [
+     216,
+     405,
+     262,
+     458
+    ]
+   ]
+  }
+ },
+ "parry_0": {
+  "frame": {
+   "warp": [
+    null,
+    [
+     91,
+     0.5
+    ]
+   ]
+  }
+ },
+ "parry_1": {
+  "frame": {
+   "warp": [
+    null,
+    [
+     91,
+     0.5
+    ]
+   ]
+  }
+ },
+ "parry_2": {
+  "frame": {
+   "warp": [
+    null,
+    [
+     91,
+     0.5
+    ]
+   ]
+  }
+ },
+ "death_3": {
+  "frame": {
+   "warp": [
+    null,
+    [
+     104,
+     0.6
+    ]
+   ]
+  },
+  "layer": {
+   "dx": -29
+  }
+ },
+ "heavy_0": {
+  "frame": {
+   "ywarp": [
+    170,
+    0.6
+   ]
+  }
+ },
+ "heavy_1": {
+  "frame": {
+   "ywarp": [
+    170,
+    0.6
+   ]
+  }
+ },
+ "heavy_2": {
+  "frame": {
+   "ywarp": [
+    170,
+    0.6
+   ]
+  }
+ },
+ "death_2": {
+  "layer": {
+   "dx": 8
+  }
+ }
+}

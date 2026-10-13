@@ -8,9 +8,14 @@ const WEAPONS = {
   scythe: { name: '星詠みの大鎌', draw: 'scythe', riposteMul: 3.0,
     light: { wu: .22, act: .12, rec: .30, dmg: 34, stam: 18, range: 70, h: 56, lunge: 60, arc: [-2.2, .9], poise: 20 },
     light2: { wu: .16, act: .12, rec: .30, dmg: 34, stam: 18, range: 70, h: 64, lunge: 70, poise: 20 },
-    light3: { wu: .26, act: .30, rec: .40, dmg: 44, stam: 26, range: 76, h: 64, lunge: 50, poise: 40, both: true },   // spin: hits both sides
+    light3: { wu: .26, act: .30, rec: .40, dmg: 44, stam: 26, range: 76, h: 64, lunge: 50, poise: 40 },
     heavy: { wu: .55, act: .16, rec: .45, dmg: 80, stam: 36, range: 84, h: 78, lunge: 40, arc: [-2.8, 1.3], poise: 60 },
-    parry: { window: .20, stam: 14, dur: .45 }, sfx: { swing: 'whoosh', parry: 'parry' } },
+    parry: { window: .20, stam: 14, dur: .45 }, sfx: { swing: 'whoosh', parry: 'parry' },
+    // hand-made sheet by 素材づくり担当 (assets/art/astarte.png): timings/hitboxes come from astarte.json, tuned below for feel
+    art: { sheet: 'assets/art/astarte.png', meta: 'art_astarte', fix: { 41: [11, 0] },
+      map: { jump: 'jump_rise', apex: 'jump_apex', parryflash: 'parry', riposte: 'heavy', hit: 'hurt', flask: 'potion', turn: 'idle' } },
+    tune: { light: { wu: .12, act: .09, rec: .28 }, light2: { wu: .10, act: .09, rec: .28 }, light3: { wu: .08, act: .18, rec: .34, lunge: 70 }, heavy: { rec: .40 },
+            parry: { start: .04, window: .18, dur: .34 } } },
   pan: { name: 'ミャオのフライパン', draw: 'pan', riposteMul: 4.0,
     light: { wu: .12, act: .08, rec: .18, dmg: 18, stam: 10, range: 36, h: 36, lunge: 50, arc: [-1.8, .6], poise: 10 },
     light2: { wu: .10, act: .08, rec: .18, dmg: 18, stam: 10, range: 36, h: 36, lunge: 60, poise: 10 },

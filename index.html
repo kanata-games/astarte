@@ -32,9 +32,14 @@ const WEAPONS = {
   scythe: { name: '星詠みの大鎌', draw: 'scythe', riposteMul: 3.0,
     light: { wu: .22, act: .12, rec: .30, dmg: 34, stam: 18, range: 70, h: 56, lunge: 60, arc: [-2.2, .9], poise: 20 },
     light2: { wu: .16, act: .12, rec: .30, dmg: 34, stam: 18, range: 70, h: 64, lunge: 70, poise: 20 },
-    light3: { wu: .26, act: .30, rec: .40, dmg: 44, stam: 26, range: 76, h: 64, lunge: 50, poise: 40, both: true },   // spin: hits both sides
+    light3: { wu: .26, act: .30, rec: .40, dmg: 44, stam: 26, range: 76, h: 64, lunge: 50, poise: 40 },
     heavy: { wu: .55, act: .16, rec: .45, dmg: 80, stam: 36, range: 84, h: 78, lunge: 40, arc: [-2.8, 1.3], poise: 60 },
-    parry: { window: .20, stam: 14, dur: .45 }, sfx: { swing: 'whoosh', parry: 'parry' } },
+    parry: { window: .20, stam: 14, dur: .45 }, sfx: { swing: 'whoosh', parry: 'parry' },
+    // hand-made sheet by 素材づくり担当 (assets/art/astarte.png): timings/hitboxes come from astarte.json, tuned below for feel
+    art: { sheet: 'assets/art/astarte.png', meta: 'art_astarte', fix: { 41: [11, 0] },
+      map: { jump: 'jump_rise', apex: 'jump_apex', parryflash: 'parry', riposte: 'heavy', hit: 'hurt', flask: 'potion', turn: 'idle' } },
+    tune: { light: { wu: .12, act: .09, rec: .28 }, light2: { wu: .10, act: .09, rec: .28 }, light3: { wu: .08, act: .18, rec: .34, lunge: 70 }, heavy: { rec: .40 },
+            parry: { start: .04, window: .18, dur: .34 } } },
   pan: { name: 'ミャオのフライパン', draw: 'pan', riposteMul: 4.0,
     light: { wu: .12, act: .08, rec: .18, dmg: 18, stam: 10, range: 36, h: 36, lunge: 50, arc: [-1.8, .6], poise: 10 },
     light2: { wu: .10, act: .08, rec: .18, dmg: 18, stam: 10, range: 36, h: 36, lunge: 60, poise: 10 },
@@ -65,7 +70,7 @@ const BOSS = { name: '弔鐘の騎士 ノクターン', hp: 950, souls: 2000, w:
 const LEVEL_COST = lv => 120 + lv * 60;
 
 // ---- sprite metadata embedded at build time (tools/build.py) ----
-const EMBEDDED_META = {"astarte_pan":{"cw":144,"ch":112,"ax":64,"ay":100,"anims":{"idle":{"row":0,"n":6,"ph":["","","","","",""]},"run":{"row":1,"n":8,"ph":["","","","","","","",""]},"jump":{"row":2,"n":2,"ph":["",""]},"fall":{"row":3,"n":2,"ph":["",""]},"land":{"row":4,"n":2,"ph":["",""]},"roll":{"row":5,"n":6,"ph":["","","","","",""]},"light1":{"row":6,"n":4,"ph":["wu","act","rec","rec"]},"light2":{"row":7,"n":4,"ph":["wu","act","rec","rec"]},"light3":{"row":8,"n":4,"ph":["wu","act","rec","rec"]},"heavy":{"row":9,"n":9,"ph":["wu","wu","wu","act","act","rec","rec","rec","rec"]},"parry":{"row":10,"n":4,"ph":["","","",""]},"parryflash":{"row":11,"n":3,"ph":["","",""]},"riposte":{"row":12,"n":6,"ph":["wu","wu","act","act","rec","rec"]},"hit":{"row":13,"n":3,"ph":["","",""]},"death":{"row":14,"n":6,"ph":["","","","","",""]},"rest":{"row":15,"n":4,"ph":["","","",""]},"flask":{"row":16,"n":6,"ph":["","","","","",""]},"turn":{"row":17,"n":3,"ph":["","",""]}}},"astarte_scythe":{"cw":144,"ch":112,"ax":64,"ay":100,"anims":{"idle":{"row":0,"n":6,"ph":["","","","","",""]},"run":{"row":1,"n":8,"ph":["","","","","","","",""]},"jump":{"row":2,"n":2,"ph":["",""]},"fall":{"row":3,"n":2,"ph":["",""]},"land":{"row":4,"n":2,"ph":["",""]},"roll":{"row":5,"n":6,"ph":["","","","","",""]},"light1":{"row":6,"n":6,"ph":["wu","wu","act","act","rec","rec"]},"light2":{"row":7,"n":6,"ph":["wu","wu","act","act","rec","rec"]},"light3":{"row":8,"n":8,"ph":["wu","wu","act","act","act","act","rec","rec"]},"heavy":{"row":9,"n":8,"ph":["wu","wu","wu","act","act","rec","rec","rec"]},"parry":{"row":10,"n":4,"ph":["","","",""]},"parryflash":{"row":11,"n":3,"ph":["","",""]},"riposte":{"row":12,"n":6,"ph":["wu","wu","act","act","rec","rec"]},"hit":{"row":13,"n":3,"ph":["","",""]},"death":{"row":14,"n":6,"ph":["","","","","",""]},"rest":{"row":15,"n":4,"ph":["","","",""]},"flask":{"row":16,"n":6,"ph":["","","","","",""]},"turn":{"row":17,"n":3,"ph":["","",""]}}}};
+const EMBEDDED_META = {"astarte_pan":{"cw":144,"ch":112,"ax":64,"ay":100,"anims":{"idle":{"row":0,"n":6,"ph":["","","","","",""]},"run":{"row":1,"n":8,"ph":["","","","","","","",""]},"jump":{"row":2,"n":2,"ph":["",""]},"fall":{"row":3,"n":2,"ph":["",""]},"land":{"row":4,"n":2,"ph":["",""]},"roll":{"row":5,"n":6,"ph":["","","","","",""]},"light1":{"row":6,"n":4,"ph":["wu","act","rec","rec"]},"light2":{"row":7,"n":4,"ph":["wu","act","rec","rec"]},"light3":{"row":8,"n":4,"ph":["wu","act","rec","rec"]},"heavy":{"row":9,"n":9,"ph":["wu","wu","wu","act","act","rec","rec","rec","rec"]},"parry":{"row":10,"n":4,"ph":["","","",""]},"parryflash":{"row":11,"n":3,"ph":["","",""]},"riposte":{"row":12,"n":6,"ph":["wu","wu","act","act","rec","rec"]},"hit":{"row":13,"n":3,"ph":["","",""]},"death":{"row":14,"n":6,"ph":["","","","","",""]},"rest":{"row":15,"n":4,"ph":["","","",""]},"flask":{"row":16,"n":6,"ph":["","","","","",""]},"turn":{"row":17,"n":3,"ph":["","",""]}}},"astarte_scythe":{"cw":144,"ch":112,"ax":64,"ay":100,"anims":{"idle":{"row":0,"n":6,"ph":["","","","","",""]},"run":{"row":1,"n":8,"ph":["","","","","","","",""]},"jump":{"row":2,"n":2,"ph":["",""]},"fall":{"row":3,"n":2,"ph":["",""]},"land":{"row":4,"n":2,"ph":["",""]},"roll":{"row":5,"n":6,"ph":["","","","","",""]},"light1":{"row":6,"n":6,"ph":["wu","wu","act","act","rec","rec"]},"light2":{"row":7,"n":6,"ph":["wu","wu","act","act","rec","rec"]},"light3":{"row":8,"n":8,"ph":["wu","wu","act","act","act","act","rec","rec"]},"heavy":{"row":9,"n":8,"ph":["wu","wu","wu","act","act","rec","rec","rec"]},"parry":{"row":10,"n":4,"ph":["","","",""]},"parryflash":{"row":11,"n":3,"ph":["","",""]},"riposte":{"row":12,"n":6,"ph":["wu","wu","act","act","rec","rec"]},"hit":{"row":13,"n":3,"ph":["","",""]},"death":{"row":14,"n":6,"ph":["","","","","",""]},"rest":{"row":15,"n":4,"ph":["","","",""]},"flask":{"row":16,"n":6,"ph":["","","","","",""]},"turn":{"row":17,"n":3,"ph":["","",""]}}},"art_astarte":{"image":"astarte.png","frame_w":96,"frame_h":80,"frames":48,"columns":48,"cx":44,"feet_y":78,"facing":"right","hitbox_note":"hitbox x/y relative to (cx, feet_y), facing right; mirror x for left. parry box = guard area.","animations":[{"name":"idle","frames":[0,1,2,3],"ms":[150,150,150,150],"loop":true},{"name":"run","frames":[4,5,6,7,8,9],"ms":[80,80,80,80,80,80],"loop":true},{"name":"jump_rise","frames":[10],"ms":[100],"loop":true},{"name":"jump_apex","frames":[11],"ms":[120],"loop":false},{"name":"fall","frames":[12],"ms":[100],"loop":true},{"name":"land","frames":[13],"ms":[80],"loop":false},{"name":"roll","frames":[14,15,16,17,18,19],"ms":[60,60,60,60,60,60],"loop":false},{"name":"light1","frames":[20,21],"ms":[70,70],"loop":false,"active":[21],"hitbox":{"21":{"x":16,"y":-36,"w":19,"h":15}}},{"name":"light2","frames":[22,23],"ms":[70,70],"loop":false,"active":[23],"hitbox":{"23":{"x":-4,"y":-33,"w":36,"h":33}}},{"name":"light3","frames":[24,25,26],"ms":[80,80,80],"loop":false,"active":[24,25],"hitbox":{"24":{"x":2,"y":-67,"w":38,"h":49},"25":{"x":3,"y":-67,"w":35,"h":58}}},{"name":"heavy","frames":[27,28,29,30,31,32],"ms":[240,80,90,110,110,130],"loop":false,"active":[28,29],"hitbox":{"28":{"x":-8,"y":-65,"w":46,"h":65},"29":{"x":-8,"y":-72,"w":46,"h":72}}},{"name":"parry","frames":[33,34,35],"ms":[60,160,100],"loop":false,"active":[34],"hitbox":{"34":{"x":8,"y":-64,"w":42,"h":65}}},{"name":"hurt","frames":[36,37],"ms":[100,100],"loop":false},{"name":"death","frames":[38,39,40,41],"ms":[120,140,180,600],"loop":false},{"name":"rest","frames":[42,43],"ms":[250,600],"loop":false},{"name":"potion","frames":[44,45,46,47],"ms":[140,220,220,160],"loop":false}]}};
 // ===== core: canvas, input, utils =====
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 ctx.imageSmoothingEnabled = false;
@@ -565,17 +570,47 @@ const ASTA = {};
     return { canvas: c, meta };
   };
   // runtime: prefer exported PNG sheets (assets/), fall back to building them in-browser
+  // ---- loader: a weapon may name a hand-made art sheet (WEAPONS[w].art); otherwise the procedural set is used ----
+  // art: { sheet: png path, meta: EMBEDDED_META key, map: {gameAnim: artAnim}, fix: {frameId: [dx, dy]} }
   ASTA.sheets = {};
+  function artSheet(wpn, A) {
+    const J = (typeof EMBEDDED_META !== 'undefined' && EMBEDDED_META[A.meta]) || null; if (!J) return null;
+    const byName = {}; for (const an of J.animations) byName[an.name] = an;
+    const meta = { cw: J.frame_w, ch: J.frame_h, ax: J.cx, ay: J.feet_y, anims: {}, art: true, fix: A.fix || {} };
+    for (const game of ASTA.ORDER.concat(['apex'])) { const an = byName[A.map[game] || game] || byName.idle, act = an.active || [];
+      const first = act.length ? an.frames.indexOf(act[0]) : -1, last = act.length ? an.frames.indexOf(act[act.length - 1]) : -1;
+      meta.anims[game] = { frames: an.frames.slice(), ms: an.ms.slice(), n: an.frames.length, ph: an.frames.map((f, i) => !act.length ? '' : i < first ? 'wu' : i <= last ? 'act' : 'rec'), active: act, hitbox: an.hitbox || {} }; }
+    const im = new Image(); const s = { img: null, meta, ready: false }; im.onload = () => { s.img = im; s.ready = true; }; im.src = A.sheet; return s;
+  }
   ASTA.get = function (wpn) {
     let s = ASTA.sheets[wpn]; if (s) return s;
-    const b = ASTA.build(wpn); s = ASTA.sheets[wpn] = { img: b.canvas, meta: b.meta, flip: null };
-    if (!TESTMODE_ART) { const im = new Image(); im.onload = () => { s.img = im; s.flip = null; }; im.src = 'assets/astarte_' + wpn + '.png'; }
+    const W = WEAPONS[wpn], A = W && W.art; if (A) { s = artSheet(wpn, A); if (s) { s.fallback = null; return ASTA.sheets[wpn] = s; } }
+    const b = ASTA.build(wpn); s = ASTA.sheets[wpn] = { img: b.canvas, meta: b.meta, ready: true };
+    if (!TESTMODE_ART) { const im = new Image(); im.onload = () => { s.img = im; }; im.src = 'assets/astarte_' + wpn + '.png'; }
     return s;
   };
+  ASTA.anim = (wpn, anim) => { const m = ASTA.get(wpn).meta; return m.anims[anim] || m.anims.idle; };
   ASTA.draw = function (g, x, y, face, anim, f, wpn, alpha) {
-    const s = ASTA.get(WEAPONS[wpn] ? WEAPONS[wpn].draw : 'scythe'), m = s.meta, a = m.anims[anim] || m.anims.idle, fi = Math.max(0, Math.min(a.n - 1, f | 0));
+    let s = ASTA.get(wpn), m = s.meta;
+    if (!s.ready) { s = s.fallback || (s.fallback = (() => { const b = ASTA.build('scythe'); return { img: b.canvas, meta: b.meta }; })()); m = s.meta; }   // art still loading
+    const a = m.anims[anim] || m.anims.idle, fi = Math.max(0, Math.min(a.n - 1, f | 0));
     g.save(); g.translate(Math.round(x), Math.round(y)); if (face < 0) g.scale(-1, 1); if (alpha !== undefined) g.globalAlpha = alpha;
-    g.drawImage(s.img, fi * m.cw, a.row * m.ch, m.cw, m.ch, -m.ax, -m.ay, m.cw, m.ch); g.restore();
+    if (m.art) { const id = a.frames[fi], fx = m.fix[id] || [0, 0]; g.drawImage(s.img, id * m.cw, 0, m.cw, m.ch, -m.ax + fx[0], -m.ay + fx[1], m.cw, m.ch); }
+    else g.drawImage(s.img, fi * m.cw, a.row * m.ch, m.cw, m.ch, -m.ax, -m.ay, m.cw, m.ch);
+    g.restore();
+  };
+  // derive move timings + hitboxes from an art sheet (ms / active / hitbox), then apply per-weapon tuning overrides
+  ASTA.applyArt = function (wpn) {
+    const W = WEAPONS[wpn]; if (!W.art) return; const s = ASTA.get(wpn); if (!s.meta.art) return;
+    for (const [k, an] of [['light', 'light1'], ['light2', 'light2'], ['light3', 'light3'], ['heavy', 'heavy']]) {
+      const a = s.meta.anims[an], m = W[k]; let wu = 0, act = 0, rec = 0;
+      a.frames.forEach((f, i) => { const t = a.ms[i] / 1000; if (a.ph[i] === 'wu') wu += t; else if (a.ph[i] === 'act') act += t; else rec += t; });
+      Object.assign(m, { wu, act, rec: Math.max(rec, m.rec || 0) });
+      const boxes = a.active.map(f => a.hitbox[f]).filter(Boolean);
+      if (boxes.length) { const x0 = Math.min(...boxes.map(b => b.x)), y0 = Math.min(...boxes.map(b => b.y)), x1 = Math.max(...boxes.map(b => b.x + b.w)), y1 = Math.max(...boxes.map(b => b.y + b.h));
+        m.hb = { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; m.range = x1; m.h = y1 - y0; }
+      Object.assign(m, (W.tune || {})[k] || {}); }
+    const pa = s.meta.anims.parry; if (pa && W.tune && W.tune.parry) Object.assign(W.parry, W.tune.parry);
   };
 })();
 const TESTMODE_ART = false;
@@ -816,7 +851,7 @@ function hurtPlayer(dmg, src, parryable, label) {
   if (P.state === 'dead' || G.mode !== 'play') return 'none';
   if (P.iframe > 0) { STATS.dodged++; return 'dodged'; }
   const W = weapon();
-  if (P.state === 'parry' && P.st < W.parry.window && parryable) {
+  if (P.state === 'parry' && P.st >= (W.parry.start || 0) && P.st < (W.parry.start || 0) + W.parry.window && parryable) {
     const sx = src ? src.x + src.w / 2 : P.x; if (Math.sign(sx - (P.x + P.w / 2)) === P.face || Math.abs(sx - P.x - P.w / 2) < 8) {
       STATS.parried++; (SFX[(W.sfx && W.sfx.parry) || 'parry'])(); G.flash = .12; G.hitstop = .12; fx('parry', P.x + P.w / 2 + P.face * 14, P.y + 18); if (src && src.onParried) src.onParried(); P.state = 'free'; P.parryFlashT = .3; P.stam = Math.min(pMaxStam(), P.stam + 10); return 'parried'; } }
   let d = dmg; if (P.state === 'parry') d *= 1.0;
@@ -849,7 +884,7 @@ function updatePlayer(dt) {
     const m = P.move; const ph = P.st < m.wu ? 'wu' : P.st < m.wu + m.act ? 'act' : 'rec';
     P.vx = ph !== 'rec' ? P.face * m.lunge : P.vx * .8;
     if (ph === 'act') {
-      const hb = m.both ? { x: P.x + P.w / 2 - m.range, y: P.y + P.h - m.h, w: m.range * 2, h: m.h } : { x: P.face > 0 ? P.x + P.w / 2 : P.x + P.w / 2 - m.range, y: P.y + P.h - m.h, w: m.range, h: m.h };
+      const hb = m.hb ? { x: P.face > 0 ? P.x + P.w / 2 + m.hb.x : P.x + P.w / 2 - m.hb.x - m.hb.w, y: P.y + P.h + m.hb.y, w: m.hb.w, h: m.hb.h } : m.both ? { x: P.x + P.w / 2 - m.range, y: P.y + P.h - m.h, w: m.range * 2, h: m.h } : { x: P.face > 0 ? P.x + P.w / 2 : P.x + P.w / 2 - m.range, y: P.y + P.h - m.h, w: m.range, h: m.h };
       for (const e of G.foes()) if (e.hp > 0 && !P.hitSet.has(e) && overlap(hb, e)) { P.hitSet.add(e); e.damage(m.dmg * pStr(), m.poise, P.face); if (W.sfx && W.sfx.hit) SFX[W.sfx.hit](); }
     }
     if (P.st > m.wu + m.act + m.rec * .55 && (peek('light') || peek('heavy') || peek('roll'))) { P.state = 'free'; P.comboT = P.t; }
@@ -878,22 +913,25 @@ function updatePlayer(dt) {
 }
 function playerPose() { // -> { anim, f } into the アスターテ sheets
   const s = P.state, ph3 = (st, wu, act, rec, anim) => { // map time onto the frames tagged wu/act/rec of this weapon's motion
-    const a = ASTA.get(weapon().draw).meta.anims[anim], ph = a.ph, p = st < wu ? 'wu' : st < wu + act ? 'act' : 'rec', t = p === 'wu' ? st / wu : p === 'act' ? (st - wu) / act : Math.min(.999, (st - wu - act) / rec);
-    const idx = []; ph.forEach((x, i) => { if (x === p) idx.push(i); }); return idx.length ? idx[Math.min(idx.length - 1, t * idx.length | 0)] : 0; };
-  if (s === 'roll') return { anim: 'roll', f: P.st / .48 * 6 };
+    const a = ASTA.anim(P.weapons[P.wi], anim), ph = a.ph, p = st < wu ? 'wu' : st < wu + act ? 'act' : 'rec', t = p === 'wu' ? st / wu : p === 'act' ? (st - wu) / act : Math.min(.999, (st - wu - act) / rec);
+    const idx = []; ph.forEach((x, i) => { if (x === p) idx.push(i); });
+    if (!idx.length) { if (p === 'wu') return 0; const prev = []; ph.forEach((x, i) => { if (x === (p === 'rec' ? 'act' : 'wu')) prev.push(i); }); return prev.length ? prev[prev.length - 1] : a.n - 1; }
+    return idx[Math.min(idx.length - 1, t * idx.length | 0)]; };
+  const wid = P.weapons[P.wi], n = an => ASTA.anim(wid, an).n;
+  if (s === 'roll') return { anim: 'roll', f: P.st / .48 * n('roll') };
   if (s === 'attack') { const m = P.move; return { anim: P.anim, f: ph3(P.st, m.wu, m.act, m.rec, P.anim) }; }
   if (s === 'riposte') return { anim: 'riposte', f: ph3(P.st, .35, .15, .3, 'riposte') };
-  if (s === 'parry') { if (P.parryFlashT > 0) return { anim: 'parryflash', f: (.3 - P.parryFlashT) / .1 }; const w = weapon().parry; return { anim: 'parry', f: P.st < w.window ? (P.st < .05 ? 0 : 1) : 2 + (P.st - w.window) / (w.dur - w.window) * 2 }; }
+  if (s === 'parry') { if (P.parryFlashT > 0) return { anim: 'parryflash', f: (.3 - P.parryFlashT) / .1 }; const w = weapon().parry, s0 = w.start || 0; return { anim: 'parry', f: P.st < Math.max(.05, s0) ? 0 : P.st < s0 + w.window ? 1 : 2 + (P.st - s0 - w.window) / (w.dur - s0 - w.window) * (n('parry') - 2) }; }
   if (P.parryFlashT > 0) return { anim: 'parryflash', f: (.3 - P.parryFlashT) / .1 };
-  if (s === 'hurt') return { anim: 'hit', f: P.st / .32 * 3 };
-  if (s === 'flask') return { anim: 'flask', f: P.st / .95 * 6 };
-  if (s === 'rest') return { anim: 'rest', f: P.st < .5 ? P.st / .25 : 2 + ((P.st * 1.2) | 0) % 2 };
-  if (s === 'dead') return { anim: 'death', f: P.st / .14 };
-  if (!P.onGround) return P.vy < 0 ? { anim: 'jump', f: P.vy < -200 ? 0 : 1 } : { anim: 'fall', f: P.vy < 200 ? 0 : 1 };
-  if (P.landT > 0) return { anim: 'land', f: (.16 - P.landT) / .08 };
-  if (P.turnT > 0) return { anim: 'turn', f: (.12 - P.turnT) / .04 };
-  if (Math.abs(P.vx) > 1) return { anim: 'run', f: (P.t * 12.5) % 8 };
-  return { anim: 'idle', f: (P.t / .2) % 6 };
+  if (s === 'hurt') return { anim: 'hit', f: P.st / .32 * n('hit') };
+  if (s === 'flask') return { anim: 'flask', f: P.st / .95 * n('flask') };
+  if (s === 'rest') return { anim: 'rest', f: n('rest') <= 2 ? (P.st < .25 ? 0 : 1) : P.st < .5 ? P.st / .25 : 2 + ((P.st * 1.2) | 0) % 2 };
+  if (s === 'dead') return { anim: 'death', f: n('death') <= 4 ? (P.st < .12 ? 0 : P.st < .26 ? 1 : P.st < .44 ? 2 : 3) : P.st / .14 };
+  if (!P.onGround) return ASTA.get(wid).meta.art && Math.abs(P.vy) < 90 ? { anim: 'apex', f: 0 } : P.vy < 0 ? { anim: 'jump', f: P.vy < -200 ? 0 : 1 } : { anim: 'fall', f: P.vy < 200 ? 0 : 1 };
+  if (P.landT > 0) return { anim: 'land', f: (.16 - P.landT) / .16 * n('land') };
+  if (P.turnT > 0) return { anim: 'turn', f: (.12 - P.turnT) / .12 * n('turn') };
+  if (Math.abs(P.vx) > 1) return { anim: 'run', f: (P.t * 12.5) % n('run') };
+  return { anim: 'idle', f: (P.t / (n('idle') <= 4 ? .16 : .2)) % n('idle') };
 }// ===== normal enemies (data-driven from ENEMIES) =====
 class Foe {
   constructor(kind, x, y) { const d = ENEMIES[kind]; Object.assign(this, { kind, d, x, y, w: d.w, h: d.h, vx: 0, vy: 0, face: -1, hp: d.hp, state: 'idle', st: 0, t: rnd() * 5, atk: null, stagger: 0, parried: false, cd: .5, fly: !!d.fly, hx: x, hy: y, hitP: false, flash: 0 }); }
@@ -1078,7 +1116,7 @@ function update(dt) {
   G.shake = Math.max(0, G.shake - dt); G.flash = Math.max(0, G.flash - dt); G.areaT -= dt;
   G.cam = lerp(G.cam, clamp(P.x + P.w / 2 - VW / 2 + P.face * 30, 0, G.room.w - VW), .12);
 }
-function startGame() { G.mode = 'play'; G.dead = {}; G.bossDown = false; G.stain = null; G.pickups = {}; G.lit = { 0: true }; G.check = { ri: 0, x: 6 };
+function startGame() { G.mode = 'play'; G.menu = null; G.hitstop = 0; G.endT = 0; G.shots = []; for (const k in buf) buf[k] = 0; for (const k in held) held[k] = false; G.dead = {}; G.bossDown = false; G.stain = null; G.pickups = {}; G.lit = { 0: true }; G.check = { ri: 0, x: 6 };
   Object.assign(P, { hp: 100, stam: 100, flasks: MAXFLASK, souls: 0, lv: { vit: 0, end: 0, str: 0 }, weapons: ['scythe'], wi: 0, state: 'free', face: 1, x: 3 * T, iframe: 0 });
   for (const k in STATS) STATS[k] = k === 'takenBy' ? {} : 0; enterRoom(0); G.toast('↑ で星の灯火に触れて休息', 3); }
 
@@ -1118,6 +1156,12 @@ function render() {
   if (P.ghosts) for (const gh of P.ghosts) ASTA.draw(g, gh.x, gh.y, gh.face, 'roll', gh.f, P.weapons[P.wi], gh.a * .5);
   const pp = playerPose(); if (P.state === 'hurt' && P.st < .08) g.filter = 'brightness(2.2)'; if (P.iframe > 0 && P.state === 'free' && (G.t * 20 | 0) % 2) g.globalAlpha = .6;
   ASTA.draw(g, P.x + P.w / 2, P.y + P.h, P.face, pp.anim, pp.f, P.weapons[P.wi]); g.filter = 'none'; g.globalAlpha = 1;
+  if (ASTA.get(P.weapons[P.wi]).meta.art) { // art sheets: runtime swing trail + parry clang flash on top of the hand-made frames
+    if (P.state === 'attack' && P.st >= P.move.wu - .02 && P.st < P.move.wu + P.move.act + .06) { const hv = P.moveKind === 'heavy', k = (P.st - P.move.wu) / P.move.act;
+      drawTrail(g, P.x + P.w / 2 + P.face * 4, P.y + P.h - 34, P.face, hv ? -2.4 : -1.5, lerp(hv ? -2.4 : -1.5, hv ? 1.3 : 1.0, clamp(k + .3, .2, 1)), hv ? 44 : 34, hv ? '#8ab0ff' : '#c8d8ff'); }
+    if (P.state === 'riposte' && P.st > .3 && P.st < .5) drawTrail(g, P.x + P.w / 2, P.y + P.h - 34, P.face, -2.4, 1.2, 44, '#ffe08a');
+    if (P.parryFlashT > 0) { const k = 1 - P.parryFlashT / .3, x = P.x + P.w / 2 + P.face * 24, y = P.y + 14; g.globalAlpha = 1 - k; g.strokeStyle = '#ffffff'; g.lineWidth = 2;
+      g.beginPath(); g.arc(x, y, 6 + k * 22, 0, 7); g.stroke(); R(g, x - 12 - k * 8, y - 1, 24 + k * 16, 2, '#ffffff'); R(g, x - 1, y - 12 - k * 8, 2, 24 + k * 16, '#ffffff'); g.globalAlpha = 1; } }
   for (const f of G.fx) { if (f.ring) { g.strokeStyle = f.col; g.lineWidth = 2; g.globalAlpha = f.life / .3; g.beginPath(); g.arc(f.x, f.y, (.3 - f.life) * 120, 0, 7); g.stroke(); g.globalAlpha = 1; } else if (f.star) { R(g, f.x - 2, f.y, 5, 1, f.col); R(g, f.x, f.y - 2, 1, 5, f.col); } else { if (f.life < .2) g.globalAlpha = f.life / .2; R(g, f.x, f.y, f.sz, f.sz, f.col); g.globalAlpha = 1; } }
   g.restore();
   // lighting (darkness with light holes + warm/cool tints + moon shafts + motes), fog, foreground silhouettes
@@ -1155,7 +1199,7 @@ function drawHUD(g) {
 }
 function drawTitle(g) {
   { const tr = G.titleRoom || (G.titleRoom = buildRoom(1)); drawLayers(g, tr, G.t * 12); g.drawImage(tr.canvas, -((G.t * 12) % (tr.w - VW)), 0); drawLighting(g, tr, (G.t * 12) % (tr.w - VW), [{ x: VW * .7 + (G.t * 12) % (tr.w - VW), y: 180, r: 140, warm: 1 }], G.t); drawFog(g, tr, G.t * 12, G.t); } R(g, 0, 0, VW, VH, 'rgba(5,4,14,.45)');
-  g.save(); g.translate(VW / 2 + 90, 236); g.scale(2, 2); ASTA.draw(g, 0, 0, -1, 'idle', (G.t / .2) % 6, 'scythe'); g.restore();
+  g.save(); g.translate(VW / 2 + 90, 236); g.scale(2, 2); ASTA.draw(g, 0, 0, -1, 'idle', (G.t / .16) % ASTA.anim('scythe', 'idle').n, 'scythe'); g.restore();
   txt(g, 'ASTARTE', 30, 92, '#e8e4ff', 34); txt(g, 'アスターテ ―月鐘の廃墟―', 32, 116, '#d9b45a', 14); R(g, 32, 124, 180, 1, '#d9b45a');
   if ((G.t * 2 | 0) % 2) txt(g, 'PRESS START / タップで開始', 32, 170, '#ffffff', 11);
   txt(g, '試作版 prototype', 32, 188, '#8a84b0', 9);
@@ -1180,6 +1224,7 @@ G.threats = () => { const out = []; for (const e of G.foes()) { const t = e.thre
     else { const sp = Math.hypot(s.vx, s.vy) || 1, dl = s.delay > 0 ? s.delay : 0, dx = (P.x + P.w / 2) - (s.x + s.w / 2), tt = Math.max(0, Math.abs(dx) - (P.w + s.w) / 2) / Math.max(1, Math.abs(s.vx)); if (!s.hitP && Math.sign(dx) === Math.sign(s.vx)) out.push({ box: { x: s.x + s.vx * tt - 6, y: s.y + s.vy * tt - 10, w: s.w + 12, h: s.h + 12 }, proj: true, t: tt + dl - .05, dur: (s.w + P.w) / sp, parry: false, label: s.label }); } }
   return out; };
 window.G = G;
+for (const w in WEAPONS) ASTA.applyArt(w);
 if (!TESTMODE) requestAnimationFrame(frame); else render();
 </script>
 </body>

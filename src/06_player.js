@@ -23,7 +23,7 @@ function hurtPlayer(dmg, src, parryable, label) {
   if (P.state === 'dead' || G.mode !== 'play') return 'none';
   if (P.iframe > 0) { STATS.dodged++; return 'dodged'; }
   const W = weapon();
-  if (P.state === 'parry' && P.st < W.parry.window && parryable) {
+  if (P.state === 'parry' && P.st >= (W.parry.start || 0) && P.st < (W.parry.start || 0) + W.parry.window && parryable) {
     const sx = src ? src.x + src.w / 2 : P.x; if (Math.sign(sx - (P.x + P.w / 2)) === P.face || Math.abs(sx - P.x - P.w / 2) < 8) {
       STATS.parried++; (SFX[(W.sfx && W.sfx.parry) || 'parry'])(); G.flash = .12; G.hitstop = .12; fx('parry', P.x + P.w / 2 + P.face * 14, P.y + 18); if (src && src.onParried) src.onParried(); P.state = 'free'; P.parryFlashT = .3; P.stam = Math.min(pMaxStam(), P.stam + 10); return 'parried'; } }
   let d = dmg; if (P.state === 'parry') d *= 1.0;
@@ -56,7 +56,7 @@ function updatePlayer(dt) {
     const m = P.move; const ph = P.st < m.wu ? 'wu' : P.st < m.wu + m.act ? 'act' : 'rec';
     P.vx = ph !== 'rec' ? P.face * m.lunge : P.vx * .8;
     if (ph === 'act') {
-      const hb = m.both ? { x: P.x + P.w / 2 - m.range, y: P.y + P.h - m.h, w: m.range * 2, h: m.h } : { x: P.face > 0 ? P.x + P.w / 2 : P.x + P.w / 2 - m.range, y: P.y + P.h - m.h, w: m.range, h: m.h };
+      const hb = m.hb ? { x: P.face > 0 ? P.x + P.w / 2 + m.hb.x : P.x + P.w / 2 - m.hb.x - m.hb.w, y: P.y + P.h + m.hb.y, w: m.hb.w, h: m.hb.h } : m.both ? { x: P.x + P.w / 2 - m.range, y: P.y + P.h - m.h, w: m.range * 2, h: m.h } : { x: P.face > 0 ? P.x + P.w / 2 : P.x + P.w / 2 - m.range, y: P.y + P.h - m.h, w: m.range, h: m.h };
       for (const e of G.foes()) if (e.hp > 0 && !P.hitSet.has(e) && overlap(hb, e)) { P.hitSet.add(e); e.damage(m.dmg * pStr(), m.poise, P.face); if (W.sfx && W.sfx.hit) SFX[W.sfx.hit](); }
     }
     if (P.st > m.wu + m.act + m.rec * .55 && (peek('light') || peek('heavy') || peek('roll'))) { P.state = 'free'; P.comboT = P.t; }
@@ -85,20 +85,23 @@ function updatePlayer(dt) {
 }
 function playerPose() { // -> { anim, f } into the アスターテ sheets
   const s = P.state, ph3 = (st, wu, act, rec, anim) => { // map time onto the frames tagged wu/act/rec of this weapon's motion
-    const a = ASTA.get(weapon().draw).meta.anims[anim], ph = a.ph, p = st < wu ? 'wu' : st < wu + act ? 'act' : 'rec', t = p === 'wu' ? st / wu : p === 'act' ? (st - wu) / act : Math.min(.999, (st - wu - act) / rec);
-    const idx = []; ph.forEach((x, i) => { if (x === p) idx.push(i); }); return idx.length ? idx[Math.min(idx.length - 1, t * idx.length | 0)] : 0; };
-  if (s === 'roll') return { anim: 'roll', f: P.st / .48 * 6 };
+    const a = ASTA.anim(P.weapons[P.wi], anim), ph = a.ph, p = st < wu ? 'wu' : st < wu + act ? 'act' : 'rec', t = p === 'wu' ? st / wu : p === 'act' ? (st - wu) / act : Math.min(.999, (st - wu - act) / rec);
+    const idx = []; ph.forEach((x, i) => { if (x === p) idx.push(i); });
+    if (!idx.length) { if (p === 'wu') return 0; const prev = []; ph.forEach((x, i) => { if (x === (p === 'rec' ? 'act' : 'wu')) prev.push(i); }); return prev.length ? prev[prev.length - 1] : a.n - 1; }
+    return idx[Math.min(idx.length - 1, t * idx.length | 0)]; };
+  const wid = P.weapons[P.wi], n = an => ASTA.anim(wid, an).n;
+  if (s === 'roll') return { anim: 'roll', f: P.st / .48 * n('roll') };
   if (s === 'attack') { const m = P.move; return { anim: P.anim, f: ph3(P.st, m.wu, m.act, m.rec, P.anim) }; }
   if (s === 'riposte') return { anim: 'riposte', f: ph3(P.st, .35, .15, .3, 'riposte') };
-  if (s === 'parry') { if (P.parryFlashT > 0) return { anim: 'parryflash', f: (.3 - P.parryFlashT) / .1 }; const w = weapon().parry; return { anim: 'parry', f: P.st < w.window ? (P.st < .05 ? 0 : 1) : 2 + (P.st - w.window) / (w.dur - w.window) * 2 }; }
+  if (s === 'parry') { if (P.parryFlashT > 0) return { anim: 'parryflash', f: (.3 - P.parryFlashT) / .1 }; const w = weapon().parry, s0 = w.start || 0; return { anim: 'parry', f: P.st < Math.max(.05, s0) ? 0 : P.st < s0 + w.window ? 1 : 2 + (P.st - s0 - w.window) / (w.dur - s0 - w.window) * (n('parry') - 2) }; }
   if (P.parryFlashT > 0) return { anim: 'parryflash', f: (.3 - P.parryFlashT) / .1 };
-  if (s === 'hurt') return { anim: 'hit', f: P.st / .32 * 3 };
-  if (s === 'flask') return { anim: 'flask', f: P.st / .95 * 6 };
-  if (s === 'rest') return { anim: 'rest', f: P.st < .5 ? P.st / .25 : 2 + ((P.st * 1.2) | 0) % 2 };
-  if (s === 'dead') return { anim: 'death', f: P.st / .14 };
-  if (!P.onGround) return P.vy < 0 ? { anim: 'jump', f: P.vy < -200 ? 0 : 1 } : { anim: 'fall', f: P.vy < 200 ? 0 : 1 };
-  if (P.landT > 0) return { anim: 'land', f: (.16 - P.landT) / .08 };
-  if (P.turnT > 0) return { anim: 'turn', f: (.12 - P.turnT) / .04 };
-  if (Math.abs(P.vx) > 1) return { anim: 'run', f: (P.t * 12.5) % 8 };
-  return { anim: 'idle', f: (P.t / .2) % 6 };
+  if (s === 'hurt') return { anim: 'hit', f: P.st / .32 * n('hit') };
+  if (s === 'flask') return { anim: 'flask', f: P.st / .95 * n('flask') };
+  if (s === 'rest') return { anim: 'rest', f: n('rest') <= 2 ? (P.st < .25 ? 0 : 1) : P.st < .5 ? P.st / .25 : 2 + ((P.st * 1.2) | 0) % 2 };
+  if (s === 'dead') return { anim: 'death', f: n('death') <= 4 ? (P.st < .12 ? 0 : P.st < .26 ? 1 : P.st < .44 ? 2 : 3) : P.st / .14 };
+  if (!P.onGround) return ASTA.get(wid).meta.art && Math.abs(P.vy) < 90 ? { anim: 'apex', f: 0 } : P.vy < 0 ? { anim: 'jump', f: P.vy < -200 ? 0 : 1 } : { anim: 'fall', f: P.vy < 200 ? 0 : 1 };
+  if (P.landT > 0) return { anim: 'land', f: (.16 - P.landT) / .16 * n('land') };
+  if (P.turnT > 0) return { anim: 'turn', f: (.12 - P.turnT) / .12 * n('turn') };
+  if (Math.abs(P.vx) > 1) return { anim: 'run', f: (P.t * 12.5) % n('run') };
+  return { anim: 'idle', f: (P.t / (n('idle') <= 4 ? .16 : .2)) % n('idle') };
 }

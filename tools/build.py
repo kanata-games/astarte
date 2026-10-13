@@ -15,6 +15,8 @@ if '--out' in sys.argv: OUT = os.path.abspath(sys.argv[sys.argv.index('--out') +
 meta = {}
 for p in sorted(glob.glob(os.path.join(ROOT, 'assets', '*.json'))):
     meta[os.path.splitext(os.path.basename(p))[0]] = json.load(open(p, encoding='utf-8'))
+for p in sorted(glob.glob(os.path.join(ROOT, 'assets', 'art', '*.json'))):   # hand-made art sheets -> art_<stem>
+    meta['art_' + os.path.splitext(os.path.basename(p))[0]] = json.load(open(p, encoding='utf-8'))
 embedded = '\n// ---- sprite metadata embedded at build time (tools/build.py) ----\nconst EMBEDDED_META = ' + json.dumps(meta, separators=(',', ':'), ensure_ascii=False) + ';\n'
 out = []
 for part in PARTS:

@@ -1,0 +1,866 @@
+[
+{
+"raw": "move",
+"anim": "idle",
+"i": 0,
+"box": [
+155,
+25,
+349,
+207
+],
+"top": 27,
+"bottom": 205,
+"face_x": 245.3,
+"chin": 92,
+"feet_x": 234.2,
+"xmin": 157,
+"xmax": 346
+},
+{
+"raw": "move",
+"anim": "idle",
+"i": 1,
+"box": [
+410,
+25,
+605,
+207
+],
+"top": 27,
+"bottom": 205,
+"face_x": 499.9,
+"chin": 93,
+"feet_x": 489.5,
+"xmin": 412,
+"xmax": 602
+},
+{
+"raw": "move",
+"anim": "idle",
+"i": 2,
+"box": [
+664,
+26,
+855,
+207
+],
+"top": 28,
+"bottom": 205,
+"face_x": 753.4,
+"chin": 92,
+"feet_x": 741.6,
+"xmin": 666,
+"xmax": 852
+},
+{
+"raw": "move",
+"anim": "idle",
+"i": 3,
+"box": [
+913,
+26,
+1105,
+208
+],
+"top": 28,
+"bottom": 206,
+"face_x": 1005.3,
+"chin": 93,
+"feet_x": 991.7,
+"xmin": 915,
+"xmax": 1102
+},
+{
+"raw": "move",
+"anim": "run",
+"i": 0,
+"box": [
+24,
+241,
+224,
+419
+],
+"top": 243,
+"bottom": 417,
+"face_x": 126.2,
+"chin": 306,
+"feet_x": 123.2,
+"xmin": 26,
+"xmax": 221
+},
+{
+"raw": "move",
+"anim": "run",
+"i": 1,
+"box": [
+228,
+242,
+424,
+419
+],
+"top": 244,
+"bottom": 417,
+"face_x": 329.6,
+"chin": 308,
+"feet_x": 325.1,
+"xmin": 230,
+"xmax": 421
+},
+{
+"raw": "move",
+"anim": "run",
+"i": 2,
+"box": [
+435,
+243,
+634,
+419
+],
+"top": 245,
+"bottom": 417,
+"face_x": 537.5,
+"chin": 308,
+"feet_x": 533.4,
+"xmin": 437,
+"xmax": 631
+},
+{
+"raw": "move",
+"anim": "run",
+"i": 3,
+"box": [
+645,
+244,
+844,
+421
+],
+"top": 246,
+"bottom": 419,
+"face_x": 749.0,
+"chin": 309,
+"feet_x": 745.1,
+"xmin": 647,
+"xmax": 841
+},
+{
+"raw": "move",
+"anim": "run",
+"i": 4,
+"box": [
+862,
+245,
+1059,
+422
+],
+"top": 247,
+"bottom": 420,
+"face_x": 964.8,
+"chin": 311,
+"feet_x": 959.2,
+"xmin": 864,
+"xmax": 1056
+},
+{
+"raw": "move",
+"anim": "run",
+"i": 5,
+"box": [
+1064,
+248,
+1258,
+423
+],
+"top": 250,
+"bottom": 421,
+"face_x": 1165.1,
+"chin": 313,
+"feet_x": 1157.1,
+"xmin": 1066,
+"xmax": 1255
+},
+{
+"raw": "move",
+"anim": "jump",
+"i": 0,
+"box": [
+138,
+468,
+328,
+637
+],
+"top": 470,
+"bottom": 635,
+"face_x": 233.2,
+"chin": 533,
+"feet_x": 201.9,
+"xmin": 140,
+"xmax": 325
+},
+{
+"raw": "move",
+"anim": "jump",
+"i": 1,
+"box": [
+405,
+445,
+601,
+628
+],
+"top": 447,
+"bottom": 626,
+"face_x": 497.8,
+"chin": 510,
+"feet_x": 461.4,
+"xmin": 407,
+"xmax": 598
+},
+{
+"raw": "move",
+"anim": "jump",
+"i": 2,
+"box": [
+666,
+474,
+861,
+647
+],
+"top": 476,
+"bottom": 645,
+"face_x": 764.6,
+"chin": 539,
+"feet_x": 730.1,
+"xmin": 668,
+"xmax": 858
+},
+{
+"raw": "move",
+"anim": "jump",
+"i": 3,
+"box": [
+934,
+490,
+1125,
+674
+],
+"top": 492,
+"bottom": 672,
+"face_x": 1031.3,
+"chin": 556,
+"feet_x": 1005.9,
+"xmin": 936,
+"xmax": 1122
+},
+{
+"raw": "attack",
+"anim": "roll",
+"i": 0,
+"box": [
+42,
+62,
+169,
+192
+],
+"top": 64,
+"bottom": 190,
+"face_x": 125.1,
+"chin": 82,
+"feet_x": 103.3,
+"xmin": 44,
+"xmax": 166
+},
+{
+"raw": "attack",
+"anim": "roll",
+"i": 1,
+"box": [
+240,
+78,
+375,
+192
+],
+"top": 80,
+"bottom": 190,
+"face_x": 335.6,
+"chin": 99,
+"feet_x": 304.3,
+"xmin": 242,
+"xmax": 372
+},
+{
+"raw": "attack",
+"anim": "roll",
+"i": 2,
+"box": [
+440,
+84,
+591,
+192
+],
+"top": 86,
+"bottom": 190,
+"face_x": 553.8,
+"chin": 106,
+"feet_x": 509.0,
+"xmin": 442,
+"xmax": 588
+},
+{
+"raw": "attack",
+"anim": "roll",
+"i": 3,
+"box": [
+659,
+82,
+808,
+192
+],
+"top": 84,
+"bottom": 190,
+"face_x": 771.0,
+"chin": 111,
+"feet_x": 721.4,
+"xmin": 661,
+"xmax": 805
+},
+{
+"raw": "attack",
+"anim": "roll",
+"i": 4,
+"box": [
+874,
+62,
+1019,
+192
+],
+"top": 64,
+"bottom": 190,
+"face_x": 992.7,
+"chin": 124,
+"feet_x": 940.7,
+"xmin": 876,
+"xmax": 1016
+},
+{
+"raw": "attack",
+"anim": "roll",
+"i": 5,
+"box": [
+1094,
+50,
+1208,
+192
+],
+"top": 52,
+"bottom": 190,
+"face_x": 1164.4,
+"chin": 70,
+"feet_x": 1154.1,
+"xmin": 1096,
+"xmax": 1205
+},
+{
+"raw": "attack",
+"anim": "light",
+"i": 0,
+"box": [
+18,
+264,
+176,
+406
+],
+"top": 266,
+"bottom": 404,
+"face_x": 114.2,
+"chin": 324,
+"feet_x": 80.1,
+"xmin": 20,
+"xmax": 173
+},
+{
+"raw": "attack",
+"anim": "light",
+"i": 1,
+"box": [
+189,
+264,
+353,
+407
+],
+"top": 266,
+"bottom": 405,
+"face_x": 276.0,
+"chin": 325,
+"feet_x": 252.8,
+"xmin": 191,
+"xmax": 350
+},
+{
+"raw": "attack",
+"anim": "light",
+"i": 2,
+"box": [
+353,
+264,
+510,
+407
+],
+"top": 266,
+"bottom": 405,
+"face_x": 438.3,
+"chin": 325,
+"feet_x": 413.1,
+"xmin": 355,
+"xmax": 507
+},
+{
+"raw": "attack",
+"anim": "light",
+"i": 3,
+"box": [
+523,
+264,
+696,
+407
+],
+"top": 266,
+"bottom": 405,
+"face_x": 612.3,
+"chin": 325,
+"feet_x": 611.8,
+"xmin": 525,
+"xmax": 693
+},
+{
+"raw": "attack",
+"anim": "light",
+"i": 4,
+"box": [
+713,
+249,
+885,
+408
+],
+"top": 251,
+"bottom": 406,
+"face_x": 788.4,
+"chin": 290,
+"feet_x": 777.6,
+"xmin": 715,
+"xmax": 882
+},
+{
+"raw": "attack",
+"anim": "light",
+"i": 5,
+"box": [
+898,
+247,
+1081,
+408
+],
+"top": 249,
+"bottom": 406,
+"face_x": 995.8,
+"chin": 331,
+"feet_x": 969.4,
+"xmin": 900,
+"xmax": 1078
+},
+{
+"raw": "attack",
+"anim": "light",
+"i": 6,
+"box": [
+1102,
+268,
+1262,
+410
+],
+"top": 270,
+"bottom": 408,
+"face_x": 1196.6,
+"chin": 328,
+"feet_x": 1191.5,
+"xmin": 1104,
+"xmax": 1259
+},
+{
+"raw": "attack",
+"anim": "heavy",
+"i": 0,
+"box": [
+34,
+453,
+158,
+643
+],
+"top": 455,
+"bottom": 641,
+"face_x": 77.0,
+"chin": 520,
+"feet_x": 98.1,
+"xmin": 36,
+"xmax": 155
+},
+{
+"raw": "attack",
+"anim": "heavy",
+"i": 1,
+"box": [
+218,
+452,
+418,
+648
+],
+"top": 454,
+"bottom": 646,
+"face_x": 301.7,
+"chin": 511,
+"feet_x": 338.5,
+"xmin": 220,
+"xmax": 415
+},
+{
+"raw": "attack",
+"anim": "heavy",
+"i": 2,
+"box": [
+444,
+456,
+647,
+648
+],
+"top": 458,
+"bottom": 646,
+"face_x": 526.1,
+"chin": 515,
+"feet_x": 569.0,
+"xmin": 446,
+"xmax": 644
+},
+{
+"raw": "attack",
+"anim": "heavy",
+"i": 3,
+"box": [
+688,
+494,
+857,
+645
+],
+"top": 496,
+"bottom": 643,
+"face_x": 766.3,
+"chin": 513,
+"feet_x": 779.5,
+"xmin": 690,
+"xmax": 854
+},
+{
+"raw": "attack",
+"anim": "heavy",
+"i": 4,
+"box": [
+903,
+492,
+1052,
+645
+],
+"top": 494,
+"bottom": 643,
+"face_x": 987.4,
+"chin": 553,
+"feet_x": 987.2,
+"xmin": 905,
+"xmax": 1049
+},
+{
+"raw": "attack",
+"anim": "heavy",
+"i": 5,
+"box": [
+1101,
+494,
+1242,
+644
+],
+"top": 496,
+"bottom": 642,
+"face_x": 1164.9,
+"chin": 512,
+"feet_x": 1181.9,
+"xmin": 1103,
+"xmax": 1239
+},
+{
+"raw": "misc",
+"anim": "parry",
+"i": 0,
+"box": [
+82,
+16,
+303,
+205
+],
+"top": 18,
+"bottom": 203,
+"face_x": 152.9,
+"chin": 67,
+"feet_x": 154.8,
+"xmin": 84,
+"xmax": 300
+},
+{
+"raw": "misc",
+"anim": "parry",
+"i": 1,
+"box": [
+357,
+16,
+583,
+205
+],
+"top": 18,
+"bottom": 203,
+"face_x": 432.4,
+"chin": 67,
+"feet_x": 428.9,
+"xmin": 359,
+"xmax": 580
+},
+{
+"raw": "misc",
+"anim": "parry",
+"i": 2,
+"box": [
+664,
+23,
+903,
+205
+],
+"top": 25,
+"bottom": 203,
+"face_x": 747.9,
+"chin": 70,
+"feet_x": 746.7,
+"xmin": 666,
+"xmax": 900
+},
+{
+"raw": "misc",
+"anim": "hurt",
+"i": 0,
+"box": [
+84,
+227,
+239,
+360
+],
+"top": 229,
+"bottom": 358,
+"face_x": 187.3,
+"chin": 249,
+"feet_x": 150.2,
+"xmin": 86,
+"xmax": 236
+},
+{
+"raw": "misc",
+"anim": "hurt",
+"i": 1,
+"box": [
+373,
+214,
+522,
+359
+],
+"top": 216,
+"bottom": 357,
+"face_x": 385.2,
+"chin": 251,
+"feet_x": 438.1,
+"xmin": 375,
+"xmax": 519
+},
+{
+"raw": "misc",
+"anim": "death",
+"i": 0,
+"box": [
+80,
+371,
+259,
+511
+],
+"top": 373,
+"bottom": 509,
+"face_x": 180.8,
+"chin": 395,
+"feet_x": 147.4,
+"xmin": 82,
+"xmax": 256
+},
+{
+"raw": "misc",
+"anim": "death",
+"i": 1,
+"box": [
+354,
+384,
+505,
+511
+],
+"top": 386,
+"bottom": 509,
+"face_x": 455.7,
+"chin": 404,
+"feet_x": 419.9,
+"xmin": 356,
+"xmax": 502
+},
+{
+"raw": "misc",
+"anim": "death",
+"i": 2,
+"box": [
+621,
+415,
+799,
+510
+],
+"top": 417,
+"bottom": 508,
+"face_x": 750.2,
+"chin": 441,
+"feet_x": 702.8,
+"xmin": 623,
+"xmax": 796
+},
+{
+"raw": "misc",
+"anim": "death",
+"i": 3,
+"box": [
+891,
+437,
+1129,
+510
+],
+"top": 439,
+"bottom": 508,
+"face_x": 941.7,
+"chin": 455,
+"feet_x": 989.9,
+"xmin": 893,
+"xmax": 1126
+},
+{
+"raw": "misc",
+"anim": "restpot",
+"i": 0,
+"box": [
+40,
+533,
+164,
+681
+],
+"top": 535,
+"bottom": 679,
+"face_x": 153.5,
+"chin": 551,
+"feet_x": 100.5,
+"xmin": 42,
+"xmax": 161
+},
+{
+"raw": "misc",
+"anim": "restpot",
+"i": 1,
+"box": [
+309,
+533,
+423,
+683
+],
+"top": 535,
+"bottom": 681,
+"face_x": 366.1,
+"chin": 556,
+"feet_x": 366.7,
+"xmin": 311,
+"xmax": 420
+},
+{
+"raw": "misc",
+"anim": "restpot",
+"i": 2,
+"box": [
+496,
+526,
+636,
+683
+],
+"top": 528,
+"bottom": 681,
+"face_x": 546.8,
+"chin": 553,
+"feet_x": 555.9,
+"xmin": 498,
+"xmax": 633
+},
+{
+"raw": "misc",
+"anim": "restpot",
+"i": 3,
+"box": [
+683,
+525,
+822,
+683
+],
+"top": 527,
+"bottom": 681,
+"face_x": 729.4,
+"chin": 555,
+"feet_x": 743.6,
+"xmin": 685,
+"xmax": 819
+},
+{
+"raw": "misc",
+"anim": "restpot",
+"i": 4,
+"box": [
+872,
+526,
+1009,
+683
+],
+"top": 528,
+"bottom": 681,
+"face_x": 916.9,
+"chin": 558,
+"feet_x": 932.4,
+"xmin": 874,
+"xmax": 1006
+},
+{
+"raw": "misc",
+"anim": "restpot",
+"i": 5,
+"box": [
+1068,
+532,
+1186,
+684
+],
+"top": 534,
+"bottom": 682,
+"face_x": 1126.5,
+"chin": 556,
+"feet_x": 1128.3,
+"xmin": 1070,
+"xmax": 1183
+}
+]

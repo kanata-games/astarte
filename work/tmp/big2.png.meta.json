@@ -1,0 +1,194 @@
+[
+ {
+  "name": "idle",
+  "points": {}
+ },
+ {
+  "name": "idle",
+  "points": {}
+ },
+ {
+  "name": "idle",
+  "points": {}
+ },
+ {
+  "name": "idle",
+  "points": {}
+ },
+ {
+  "name": "run",
+  "points": {}
+ },
+ {
+  "name": "run",
+  "points": {}
+ },
+ {
+  "name": "run",
+  "points": {}
+ },
+ {
+  "name": "run",
+  "points": {}
+ },
+ {
+  "name": "run",
+  "points": {}
+ },
+ {
+  "name": "run",
+  "points": {}
+ },
+ {
+  "name": "jump_rise",
+  "points": {}
+ },
+ {
+  "name": "jump_apex",
+  "points": {}
+ },
+ {
+  "name": "fall",
+  "points": {}
+ },
+ {
+  "name": "land",
+  "points": {}
+ },
+ {
+  "name": "roll",
+  "points": {}
+ },
+ {
+  "name": "roll",
+  "points": {}
+ },
+ {
+  "name": "roll",
+  "points": {}
+ },
+ {
+  "name": "roll",
+  "points": {}
+ },
+ {
+  "name": "roll",
+  "points": {}
+ },
+ {
+  "name": "roll",
+  "points": {}
+ },
+ {
+  "name": "light1",
+  "points": {}
+ },
+ {
+  "name": "light1",
+  "points": {}
+ },
+ {
+  "name": "light2",
+  "points": {}
+ },
+ {
+  "name": "light2",
+  "points": {}
+ },
+ {
+  "name": "light3",
+  "points": {}
+ },
+ {
+  "name": "light3",
+  "points": {}
+ },
+ {
+  "name": "light3",
+  "points": {}
+ },
+ {
+  "name": "heavy",
+  "points": {}
+ },
+ {
+  "name": "heavy",
+  "points": {}
+ },
+ {
+  "name": "heavy",
+  "points": {}
+ },
+ {
+  "name": "heavy",
+  "points": {}
+ },
+ {
+  "name": "heavy",
+  "points": {}
+ },
+ {
+  "name": "heavy",
+  "points": {}
+ },
+ {
+  "name": "parry",
+  "points": {}
+ },
+ {
+  "name": "parry",
+  "points": {}
+ },
+ {
+  "name": "parry",
+  "points": {}
+ },
+ {
+  "name": "hurt",
+  "points": {}
+ },
+ {
+  "name": "hurt",
+  "points": {}
+ },
+ {
+  "name": "death",
+  "points": {}
+ },
+ {
+  "name": "death",
+  "points": {}
+ },
+ {
+  "name": "death",
+  "points": {}
+ },
+ {
+  "name": "death",
+  "points": {}
+ },
+ {
+  "name": "rest",
+  "points": {}
+ },
+ {
+  "name": "rest",
+  "points": {}
+ },
+ {
+  "name": "potion",
+  "points": {}
+ },
+ {
+  "name": "potion",
+  "points": {}
+ },
+ {
+  "name": "potion",
+  "points": {}
+ },
+ {
+  "name": "potion",
+  "points": {}
+ }
+]
