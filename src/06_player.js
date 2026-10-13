@@ -93,8 +93,8 @@ function playerPose() { // -> { anim, f } into the アスターテ sheets
   if (s === 'roll') return { anim: 'roll', f: P.st / .48 * n('roll') };
   if (s === 'attack') { const m = P.move; return { anim: P.anim, f: ph3(P.st, m.wu, m.act, m.rec, P.anim) }; }
   if (s === 'riposte') return { anim: 'riposte', f: ph3(P.st, .35, .15, .3, 'riposte') };
-  if (s === 'parry') { if (P.parryFlashT > 0) return { anim: 'parryflash', f: (.3 - P.parryFlashT) / .1 }; const w = weapon().parry, s0 = w.start || 0; return { anim: 'parry', f: P.st < Math.max(.05, s0) ? 0 : P.st < s0 + w.window ? 1 : 2 + (P.st - s0 - w.window) / (w.dur - s0 - w.window) * (n('parry') - 2) }; }
-  if (P.parryFlashT > 0) return { anim: 'parryflash', f: (.3 - P.parryFlashT) / .1 };
+  if (s === 'parry') { if (P.parryFlashT > 0) return { anim: 'parryflash', f: ASTA.get(wid).meta.art ? 1 : (.3 - P.parryFlashT) / .1 }; const w = weapon().parry, s0 = w.start || 0; return { anim: 'parry', f: P.st < Math.max(.05, s0) ? 0 : P.st < s0 + w.window ? 1 : 2 + (P.st - s0 - w.window) / (w.dur - s0 - w.window) * (n('parry') - 2) }; }
+  if (P.parryFlashT > 0) return { anim: 'parryflash', f: ASTA.get(wid).meta.art ? 1 : (.3 - P.parryFlashT) / .1 };
   if (s === 'hurt') return { anim: 'hit', f: P.st / .32 * n('hit') };
   if (s === 'flask') return { anim: 'flask', f: P.st / .95 * n('flask') };
   if (s === 'rest') return { anim: 'rest', f: n('rest') <= 2 ? (P.st < .25 ? 0 : 1) : P.st < .5 ? P.st / .25 : 2 + ((P.st * 1.2) | 0) % 2 };

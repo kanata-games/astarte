@@ -12,4 +12,14 @@ const { chromium } = require('playwright'); const S = require('./serve.js'); con
   await p.evaluate(() => { const P = G.P; G.step(60); const e = G.enemies[0]; e.cd = 0; e.hp = 999; P.face = 1; P.x = e.x - 44;
     for (let i = 0; i < 400; i++) { if (e.state === 'windup' && e.atk.wu - e.st < .08 && P.state === 'free') G.press('parry'); G.step(1); G.release('parry'); if (P.parryFlashT > 0 && P.parryFlashT < .26) break; } });
   await shot('art_03_parry');
+  await p.waitForFunction(() => ASTA.get('pan').ready);
+  await p.evaluate(() => { G.startGame(); G.enterRoom(3, 'left'); G.enemies = []; const P = G.P; P.weapons = ['scythe', 'pan']; P.wi = 1; P.x = 330; P.face = 1; G.step(60); G.areaT = 0; G.toasts = [];
+    const e = new Foe('husk', 400, 0); e.y = floorY(G.room, 25) - e.h; e.hp = 999; e.cd = 9; G.enemies.push(e);
+    G.press('heavy'); G.step(1); G.release('heavy'); while (P.st < P.move.wu + P.move.act * .5) G.step(1); });
+  await shot('art_04_pan_heavy_smash');
+  await p.evaluate(() => { const P = G.P; while (P.state === 'attack' && P.st < P.move.wu + P.move.act + .3) G.step(1); });
+  await shot('art_05_pan_dizzy');
+  await p.evaluate(() => { const P = G.P; G.step(60); const e = G.enemies[0]; e.cd = 0; P.face = 1; P.x = e.x - 44;
+    for (let i = 0; i < 400; i++) { if (e.state === 'windup' && e.atk.wu - e.st < .08 && P.state === 'free') G.press('parry'); G.step(1); G.release('parry'); if (P.parryFlashT > 0 && P.parryFlashT < .24) break; } });
+  await shot('art_06_pan_parry');
   console.log('errors', JSON.stringify(errs)); await b.close(); srv.close(); })();

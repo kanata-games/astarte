@@ -116,7 +116,11 @@ function render() {
     if (P.state === 'attack' && P.st >= P.move.wu - .02 && P.st < P.move.wu + P.move.act + .06) { const hv = P.moveKind === 'heavy', k = (P.st - P.move.wu) / P.move.act;
       drawTrail(g, P.x + P.w / 2 + P.face * 4, P.y + P.h - 34, P.face, hv ? -2.4 : -1.5, lerp(hv ? -2.4 : -1.5, hv ? 1.3 : 1.0, clamp(k + .3, .2, 1)), hv ? 44 : 34, hv ? '#8ab0ff' : '#c8d8ff'); }
     if (P.state === 'riposte' && P.st > .3 && P.st < .5) drawTrail(g, P.x + P.w / 2, P.y + P.h - 34, P.face, -2.4, 1.2, 44, '#ffe08a');
-    if (P.parryFlashT > 0) { const k = 1 - P.parryFlashT / .3, x = P.x + P.w / 2 + P.face * 24, y = P.y + 14; g.globalAlpha = 1 - k; g.strokeStyle = '#ffffff'; g.lineWidth = 2;
+    const Wd = weapon();
+    if (Wd.dizzy && P.state === 'attack' && P.moveKind === 'heavy' && P.st > P.move.wu + P.move.act + .05) for (let i = 0; i < 3; i++) { const an = G.t * 6 + i * 2.1, sx = P.x + P.w / 2 + Math.cos(an) * 11, sy = P.y - 4 + Math.sin(an) * 3; R(g, sx - 2, sy, 5, 1, '#ffe08a'); R(g, sx, sy - 2, 1, 5, '#ffe08a'); }
+    if (P.parryFlashT > 0 && Wd.sfx && Wd.sfx.parry === 'clang') { const k = 1 - P.parryFlashT / .3, x = P.x + P.w / 2 + P.face * 22, y = P.y + 6; g.globalAlpha = 1 - k * .8;
+      for (const [r0, c] of [[8, '#fff2c0'], [16, '#ffe08a'], [24, '#c8a050']]) { g.strokeStyle = c; g.lineWidth = 1; g.beginPath(); g.arc(x, y, r0 + k * 18, 0, 7); g.stroke(); } g.globalAlpha = 1; }
+    else if (P.parryFlashT > 0) { const k = 1 - P.parryFlashT / .3, x = P.x + P.w / 2 + P.face * 24, y = P.y + 14; g.globalAlpha = 1 - k; g.strokeStyle = '#ffffff'; g.lineWidth = 2;
       g.beginPath(); g.arc(x, y, 6 + k * 22, 0, 7); g.stroke(); R(g, x - 12 - k * 8, y - 1, 24 + k * 16, 2, '#ffffff'); R(g, x - 1, y - 12 - k * 8, 2, 24 + k * 16, '#ffffff'); g.globalAlpha = 1; } }
   for (const f of G.fx) { if (f.ring) { g.strokeStyle = f.col; g.lineWidth = 2; g.globalAlpha = f.life / .3; g.beginPath(); g.arc(f.x, f.y, (.3 - f.life) * 120, 0, 7); g.stroke(); g.globalAlpha = 1; } else if (f.star) { R(g, f.x - 2, f.y, 5, 1, f.col); R(g, f.x, f.y - 2, 1, 5, f.col); } else { if (f.life < .2) g.globalAlpha = f.life / .2; R(g, f.x, f.y, f.sz, f.sz, f.col); g.globalAlpha = 1; } }
   g.restore();

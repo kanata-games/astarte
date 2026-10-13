@@ -21,7 +21,11 @@ const WEAPONS = {
     light2: { wu: .10, act: .08, rec: .18, dmg: 18, stam: 10, range: 36, h: 36, lunge: 60, poise: 10 },
     light3: { wu: .20, act: .10, rec: .30, dmg: 30, stam: 16, range: 40, h: 44, lunge: 120, poise: 50 },
     heavy: { wu: .42, act: .12, rec: .55, dmg: 52, stam: 26, range: 44, h: 48, lunge: 90, arc: [-2.6, 1.0], poise: 80 },
-    parry: { window: .28, stam: 10, dur: .40 }, sfx: { swing: 'swish', parry: 'clang', hit: 'bonk' } },   // light weapon = generous parry, big riposte
+    parry: { window: .28, stam: 10, dur: .40 }, sfx: { swing: 'swish', parry: 'clang', hit: 'bonk' }, dizzy: true,
+    art: { sheet: 'assets/art/astarte_pan.png', meta: 'art_astarte_pan', fix: { 29: [-4, 0], 41: [-6, 0], 42: [-6, 0] },
+      map: { jump: 'jump_rise', apex: 'jump_apex', parryflash: 'parry', riposte: 'heavy', hit: 'hurt', flask: 'potion', turn: 'idle' } },
+    tune: { light: { wu: .08, act: .08, rec: .20 }, light2: { wu: .07, act: .08, rec: .20 }, light3: { wu: .10, act: .18, rec: .22, lunge: 110 },
+            heavy: { wu: .38, act: .12, rec: .75 }, parry: { start: .04, window: .26, dur: .44 } } },   // light weapon = generous parry, big riposte
 };
 // Enemies. attack.parry=true -> white telegraph flash (parryable), false -> red (dodge it).
 const ENEMIES = {

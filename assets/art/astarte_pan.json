@@ -1,0 +1,301 @@
+{
+ "image": "astarte_pan.png",
+ "frame_w": 96,
+ "frame_h": 80,
+ "frames": 49,
+ "columns": 49,
+ "cx": 44,
+ "feet_y": 78,
+ "facing": "right",
+ "hitbox_note": "pan variant: hitbox x/y relative to (cx, feet_y), facing right; mirror x for left. parry box = guard area.",
+ "animations": [
+  {
+   "name": "idle",
+   "frames": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "ms": [
+    150,
+    150,
+    150,
+    150
+   ],
+   "loop": true
+  },
+  {
+   "name": "run",
+   "frames": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "ms": [
+    80,
+    80,
+    80,
+    80,
+    80,
+    80
+   ],
+   "loop": true
+  },
+  {
+   "name": "jump_rise",
+   "frames": [
+    10
+   ],
+   "ms": [
+    100
+   ],
+   "loop": true
+  },
+  {
+   "name": "jump_apex",
+   "frames": [
+    11
+   ],
+   "ms": [
+    120
+   ],
+   "loop": false
+  },
+  {
+   "name": "fall",
+   "frames": [
+    12
+   ],
+   "ms": [
+    100
+   ],
+   "loop": true
+  },
+  {
+   "name": "land",
+   "frames": [
+    13
+   ],
+   "ms": [
+    80
+   ],
+   "loop": false
+  },
+  {
+   "name": "roll",
+   "frames": [
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ],
+   "ms": [
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "loop": false
+  },
+  {
+   "name": "light1",
+   "frames": [
+    20,
+    21
+   ],
+   "ms": [
+    80,
+    140
+   ],
+   "loop": false,
+   "active": [
+    20
+   ],
+   "hitbox": {
+    "20": {
+     "x": 16,
+     "y": -36,
+     "w": 18,
+     "h": 16
+    }
+   }
+  },
+  {
+   "name": "light2",
+   "frames": [
+    22,
+    23
+   ],
+   "ms": [
+    80,
+    140
+   ],
+   "loop": false,
+   "active": [
+    22
+   ],
+   "hitbox": {
+    "22": {
+     "x": 15,
+     "y": -32,
+     "w": 18,
+     "h": 13
+    }
+   }
+  },
+  {
+   "name": "light3",
+   "frames": [
+    24,
+    25,
+    26
+   ],
+   "ms": [
+    100,
+    80,
+    160
+   ],
+   "loop": false,
+   "active": [
+    25,
+    26
+   ],
+   "hitbox": {
+    "25": {
+     "x": -8,
+     "y": -33,
+     "w": 23,
+     "h": 31
+    },
+    "26": {
+     "x": 1,
+     "y": -17,
+     "w": 17,
+     "h": 16
+    }
+   }
+  },
+  {
+   "name": "heavy",
+   "frames": [
+    27,
+    28,
+    29,
+    30,
+    31,
+    32
+   ],
+   "ms": [
+    260,
+    120,
+    90,
+    320,
+    320,
+    260
+   ],
+   "loop": false,
+   "active": [
+    29
+   ],
+   "hitbox": {
+    "29": {
+     "x": 0,
+     "y": -24,
+     "w": 25,
+     "h": 20
+    }
+   }
+  },
+  {
+   "name": "parry",
+   "frames": [
+    33,
+    34,
+    35,
+    36
+   ],
+   "ms": [
+    60,
+    160,
+    100,
+    120
+   ],
+   "loop": false,
+   "active": [
+    34
+   ],
+   "hitbox": {
+    "34": {
+     "x": 8,
+     "y": -62,
+     "w": 27,
+     "h": 62
+    }
+   }
+  },
+  {
+   "name": "hurt",
+   "frames": [
+    37,
+    38
+   ],
+   "ms": [
+    100,
+    100
+   ],
+   "loop": false
+  },
+  {
+   "name": "death",
+   "frames": [
+    39,
+    40,
+    41,
+    42
+   ],
+   "ms": [
+    120,
+    140,
+    180,
+    600
+   ],
+   "loop": false
+  },
+  {
+   "name": "rest",
+   "frames": [
+    43,
+    44
+   ],
+   "ms": [
+    250,
+    600
+   ],
+   "loop": false
+  },
+  {
+   "name": "potion",
+   "frames": [
+    45,
+    46,
+    47,
+    48
+   ],
+   "ms": [
+    140,
+    220,
+    220,
+    160
+   ],
+   "loop": false
+  }
+ ]
+}

@@ -25,6 +25,10 @@ def accent_green_eye(rgb):
 def skin_warm(rgb):
     r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
     return (r > 200) & (g > 160) & (b > 130) & (r - b > 25) & (r - b < 90) & (r >= g)
+def pink_ear(rgb):   # inner cat ear pink (keeps it from merging into gold/star yellow in the shared palette)
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    return (r > 180) & (g > 100) & (g < 190) & (b > 100) & (b < 195) & (r - g > 35) & (np.abs(g - b) < 35)
+sprite_lib.pink_ear = pink_ear
 sprite_lib.accent_teal = accent_teal; sprite_lib.accent_green_eye = accent_green_eye; sprite_lib.skin_warm = skin_warm
 G = dict(globals())
 
